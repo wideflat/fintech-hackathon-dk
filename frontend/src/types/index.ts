@@ -54,6 +54,30 @@ export interface NegotiationSuggestion {
   priority: "low" | "medium" | "high";
 }
 
+export interface RealtimeEvent {
+  event_id: string;
+  type: string;
+  timestamp: string;
+  isClient?: boolean;
+  data?: any;
+}
+
+export type SessionState = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnecting';
+
+export interface WebRTCConnection {
+  peerConnection: RTCPeerConnection | null;
+  dataChannel: RTCDataChannel | null;
+  audioElement: HTMLAudioElement | null;
+  localStream: MediaStream | null;
+}
+
+export interface TokenResponse {
+  client_secret: {
+    value: string;
+  };
+  expires_at: string;
+}
+
 export type AppMode = "comparison" | "live-assistant";
 
 export interface AppState {
@@ -66,7 +90,11 @@ export interface AppState {
   chatMessages: ChatMessage[];
   transcriptionMessages: TranscriptionMessage[];
   negotiationSuggestions: NegotiationSuggestion[];
+  realtimeEvents: RealtimeEvent[];
   isRecording: boolean;
   isLoading: boolean;
   error: string | null;
+  // WebRTC Session State
+  sessionState: SessionState;
+  webrtcConnection: WebRTCConnection;
 }

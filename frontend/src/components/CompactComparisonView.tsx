@@ -5,13 +5,20 @@ import {
   Percent,
   AlertTriangle,
   CheckCircle,
+  Activity,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import PDFUpload from "./PDFUpload";
 
 const CompactComparisonView: React.FC = () => {
-  const { loanEstimates, comparisonResult, setLoading, setComparisonResult } =
-    useAppStore();
+  const { 
+    loanEstimates, 
+    comparisonResult, 
+    setLoading, 
+    setComparisonResult,
+    addRealtimeEvent,
+    clearRealtimeEvents
+  } = useAppStore();
 
   const handlePDFUpload = (file: File, lender: "lenderA" | "lenderB") => {
     // Simulate extracting data from PDF
@@ -65,6 +72,105 @@ const CompactComparisonView: React.FC = () => {
 
   const canCompare = loanEstimates.lenderA && loanEstimates.lenderB;
 
+  // Mock event generation for testing EventLog
+  const generateMockEvents = () => {
+    clearRealtimeEvents();
+    
+    const mockEvents = [
+      {
+        event_id: "event_001",
+        type: "session.created",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { session_id: "sess_abc123", model: "gpt-4o-realtime-preview" }
+      },
+      {
+        event_id: "client_002",
+        type: "session.update",
+        timestamp: new Date().toISOString(),
+        isClient: true,
+        data: { turn_detection: { type: "server_vad" } }
+      },
+      {
+        event_id: "event_003",
+        type: "conversation.created",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { conversation: { id: "conv_abc123" } }
+      },
+      {
+        event_id: "client_004",
+        type: "input_audio_buffer.append",
+        timestamp: new Date().toISOString(),
+        isClient: true,
+        data: { audio: "[audio data]" }
+      },
+      {
+        event_id: "event_005",
+        type: "input_audio_buffer.speech_started",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { audio_start_ms: 1000 }
+      },
+      {
+        event_id: "event_006",
+        type: "conversation.item.created",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { 
+          item: { 
+            id: "item_001", 
+            type: "message", 
+            role: "user",
+            content: [{ type: "input_text", text: "Hello, I need help with my loan comparison." }]
+          } 
+        }
+      },
+      {
+        event_id: "event_007",
+        type: "response.created",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { response: { id: "resp_001", status: "in_progress" } }
+      },
+      {
+        event_id: "event_008",
+        type: "response.output_item.added",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { 
+          item: {
+            id: "item_002",
+            type: "message", 
+            role: "assistant",
+            content: [{ type: "text", text: "I'd be happy to help you compare your loan estimates..." }]
+          }
+        }
+      },
+      {
+        event_id: "event_009",
+        type: "response.audio.delta",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { delta: "[audio_delta_data]" }
+      },
+      {
+        event_id: "event_010", 
+        type: "response.done",
+        timestamp: new Date().toISOString(),
+        isClient: false,
+        data: { response: { id: "resp_001", status: "completed" } }
+      }
+    ];
+
+    // Add events with delays to simulate real-time flow
+    mockEvents.forEach((event, index) => {
+      setTimeout(() => {
+        addRealtimeEvent(event);
+      }, index * 500);
+    });
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -93,15 +199,24 @@ const CompactComparisonView: React.FC = () => {
             </div>
           </div>
 
-          {canCompare && (
+          <div className="flex items-center space-x-3">
+            {canCompare && (
+              <button
+                onClick={handleCompare}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <TrendingUp size={20} />
+                <span>Generate AI Analysis</span>
+              </button>
+            )}
             <button
-              onClick={handleCompare}
-              className="btn-primary flex items-center space-x-2"
+              onClick={generateMockEvents}
+              className="btn-secondary flex items-center space-x-2"
             >
-              <TrendingUp size={20} />
-              <span>Generate AI Analysis</span>
+              <Activity size={20} />
+              <span>Test Events</span>
             </button>
-          )}
+          </div>
         </div>
       </div>
 
