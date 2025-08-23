@@ -3,6 +3,7 @@
 
 import re
 from PyPDF2 import PdfReader
+import os
 
 def extract_loan_info(pdf_path):
     """
@@ -15,60 +16,71 @@ def extract_loan_info(pdf_path):
         dict: A dictionary containing the extracted loan information.
     """
     try:
+        # Check if file exists
+        if not os.path.exists(pdf_path):
+            return {"error": f"File not found: {pdf_path}"}
+        
         reader = PdfReader(pdf_path)
         full_text = ""
         for page in reader.pages:
-            full_text += page.extract_text() + "\n"
+            page_text = page.extract_text()
+            full_text += page_text + "\n"
+        
+        # If no text was extracted, it might be a scanned PDF
+        if len(full_text.strip()) <= 5:
+            return {"error": f"No text could be extracted from {pdf_path}. This might be a scanned PDF that requires OCR."}
 
-        # DEBUG: Print the raw extracted text to see the actual format
-        print("=== RAW EXTRACTED TEXT ===")
-        print(repr(full_text))  # repr() shows whitespace characters
-        print("========================")
+        # DEBUG: Print the raw extracted text to see the actual format (disabled)
+        # print("=== RAW EXTRACTED TEXT ===")
+        # print(repr(full_text))  # repr() shows whitespace characters
+        # print("========================")
 
         # --- Use regular expressions to find specific values ---
         # Note: These patterns are based on the sample PDF and may need
         # to be adjusted for different PDF layouts.
 
         # Try multiple patterns for each field to handle different formats
+        # Updated patterns based on actual PDF text structure
         loan_amount_patterns = [
             r"Loan Amount\s*\n\s*\$([\d,.]+)",
             r"Loan Amount\s*\$([\d,.]+)",
-            r"Loan Amount.*?\$([\d,.]+)",
+            r"SALE PRICE\s*\$([\d,.]+)",  # Sometimes loan amount appears as sale price
             r"loan amount.*?\$([\d,.]+)"
         ]
         
         interest_rate_patterns = [
             r"Interest Rate\s*\n\s*([\d.]+)%",
             r"Interest Rate\s*([\d.]+)%",
-            r"Interest Rate.*?([\d.]+)%",
+            r"\$[\d,.]+\s+([\d.]+)%",  # Pattern like "$400,000 4.750%"
+            r"([\d.]+)%\s*\n\s*\$[\d,.]+",
             r"interest rate.*?([\d.]+)%"
         ]
         
         closing_costs_patterns = [
-            r"Total Closing Costs \(J\)\s*\n\s*-?\$([\d,.]+)",
-            r"Total Closing Costs.*?\$([\d,.]+)",
-            r"total closing costs.*?\$([\d,.]+)",
-            r"Closing Costs.*?\$([\d,.]+)"
+            r"Estimated Closing Costs.*?\$(\d+,\d+)",  # Works for both PDFs
+            r"Total Closing Costs \(J\)\s*\$(\d+,\d+)",  # Standard pattern  
+            r"J\.TOTAL CLOSING COSTS.*?\$(\d+,\d+)",  # More specific pattern
+            r"D\+I\s*\$(\d+,\d+)",  # For detailed format
+            r"total closing costs.*?\$(\d+,\d+)"
         ]
         
         date_issued_patterns = [
             r"DATE ISSUED\s*\n\s*([\d/]+)",
-            r"DATE ISSUED\s*([\d/]+)",
+            r"DATE ISSUED\s+([\d/]+)",
             r"Date Issued.*?([\d/]+)",
             r"date issued.*?([\d/]+)"
         ]
         
         loan_id_patterns = [
-            r"LOAN ID #\s*(\d+)",
-            r"LOAN ID.*?(\d+)",
-            r"Loan ID.*?(\d+)",
-            r"loan id.*?(\d+)"
+            r"LOAN ID#\s*([A-Z]\d+)",  # More specific for patterns like R002390
+            r"LOAN ID#\s*(\w+)",
+            r"LOAN ID.*?([A-Z]\d+)",
+            r"loan id.*?(\w+)"
         ]
         
         points_patterns = [
-            r"% of Loan Amount \(Points\)\s*\n\s*([\d.]+)%",
+            r"(\d+)% of Loan Amount \(Points\)",  # Pattern like "1% of Loan Amount (Points)"
             r"% of Loan Amount \(Points\)\s*([\d.]+)%",
-            r"% of Loan Amount.*?([\d.]+)%",
             r"Points.*?([\d.]+)%",
             r"points.*?([\d.]+)%"
         ]
