@@ -1,8 +1,11 @@
-# AI-Powered Loan Estimate Comparison Application: Technical Specifications
+# AI-Powered Loan Application Assistant: Technical Specifications
 
 ## 1. Project Overview
 
-This document outlines the technical specifications for an AI-powered web application designed to help users compare loan estimates from different lenders. The application will feature a side-by-side comparison view, an integrated chat for communication with a loan officer, and AI-driven recommendations to help users make informed decisions.
+This document outlines the technical specifications for a multi-faceted, AI-powered web application designed to assist users throughout the loan application process. The application has two primary use cases:
+
+- **Loan Estimate Comparison**: A tool for a detailed, side-by-side comparison of loan estimates from different lenders, with AI-driven recommendations.
+- **Live Negotiation Assistant**: A real-time AI assistant that provides negotiation tactics during live phone conversations with loan officers by transcribing and analyzing the discussion.
 
 ## 2. Technology Stack
 
@@ -13,91 +16,84 @@ This document outlines the technical specifications for an AI-powered web applic
 
 ### Backend: Node.js
 - **Framework**: Express.js for routing and API endpoints
-- **Real-time Communication**: Socket.IO or WebSockets for the chat feature
-- **AI Integration**: Third-party LLM API (e.g., Anthropic Claude) for analyzing loan data and generating recommendations
+- **Real-time Communication**: Socket.IO or WebSockets for chat and live transcription
 
-## 3. User Interface (UI) and Layout
+### AI & Services:
+- **LLM API**: Third-party LLM (e.g., Anthropic Claude) for analysis and recommendations
+- **Speech-to-Text**: A real-time transcription service
 
-The application will have a three-part layout: a navigation sidebar on the left, a main content area in the center, and a chat panel on the right.
+## 3. Core Use Cases
 
-### 3.1. Sidebar Navigation
+### 3.1. Use Case 1: Loan Estimate Comparison
 
-**Purpose**: Provides primary navigation for the application.
+The user can upload or manually enter data from two different loan estimates. The application will perform a comparative analysis focusing on three core components:
 
-**Initial Items**:
-- A single, selectable item labeled "Comparison". This will be the main view.
+- **Interest Rate**: The base rate offered
+- **Points & Associated Fees**: Costs paid to lower the interest rate
+- **All Other Fees**: Closing costs, origination fees, etc.
 
-**Behavior**: Clicking "Comparison" will ensure the main content area displays the loan estimate comparison interface. It should be highlighted when active.
+The AI will then process this information and generate a recommendation in the main panel, explaining which loan is financially advantageous and why.
 
-### 3.2. Main Content Area
+### 3.2. Use Case 2: Live Negotiation Assistant
 
-This area is vertically divided into two sections.
+During a live phone call with a loan officer, the application will:
 
-#### 3.2.1. Top Section: Loan Estimate Comparison
+- Capture the audio and use a speech-to-text service to generate a live transcription of the conversation, which will be displayed on the right side of the screen
+- Feed the live transcript to the AI model in real-time
+- The AI will analyze the conversation and display actionable negotiation tactics and suggestions in the recommendation panel at the bottom of the screen, empowering the user during the call
 
-**Layout**: A side-by-side view to compare two loan estimates: Lender A and Lender B.
+## 4. User Interface (UI) and Layout
 
-**Functionality**:
-- Each side will have an "Upload Document" button or a form to input data manually
-- The comparison table should clearly display corresponding fields next to each other
+The application will have a three-part layout: a navigation sidebar, a main content area, and a communication panel on the right.
 
-**Data Fields to Display**:
+### 4.1. Sidebar Navigation
 
-**Loan Terms**:
-- Loan Amount
-- Interest Rate
-- Loan Term (e.g., 30 years)
-- Principal & Interest (P&I)
+**Purpose**: Allows switching between the application's core functions.
 
-**Projected Payments**:
-- Mortgage Insurance
-- Estimated Escrow
-- Total Estimated Monthly Payment
+**Items**:
+- **Comparison**: Activates the loan estimate comparison view
+- **Live Assistant**: Activates the real-time negotiation assistant view
 
-**Closing Costs**:
-- Loan Costs (Origination Fees, Services You Cannot Shop For, Services You Can Shop For)
-- Other Costs (Taxes, Government Fees, Prepaids)
-- Total Closing Costs
+**Behavior**: The selected mode will be highlighted and will reconfigure the main content and right-side panels.
 
-**Cash to Close**:
-- Estimated Cash to Close
+### 4.2. Main Content Area
 
-**Key Metrics**:
-- Annual Percentage Rate (APR)
-- In 5 Years (Total you will have paid)
+This area is vertically divided into two sections. Its content depends on the selected mode.
 
-#### 3.2.2. Bottom Section: AI Recommendations
+#### 4.2.1. Top Section
 
-**Purpose**: To display insights and suggestions generated by the AI based on the provided loan estimates.
+- **In Comparison Mode**: Displays a side-by-side view for Lender A and Lender B with fields for data input/upload
+- **In Live Assistant Mode**: This area might display key metrics extracted from the conversation or could be hidden to give more focus to the recommendations
 
-**Content**: This section will initially be empty. After the user inputs data for both lenders, a "Generate Analysis" button will appear.
+#### 4.2.2. Bottom Section: AI Recommendations
 
-**Display Format**: The recommendations should be presented as clear, easy-to-read cards or bullet points, such as:
-- **"Cost Savings Alert"**: "Lender B has lower origination fees, saving you $500 upfront."
-- **"Interest Rate Insight"**: "Lender A offers a 0.125% lower interest rate, which could save you approximately $12,000 over the life of the loan."
-- **"Negotiation Point"**: "Consider asking Lender A to match Lender B's lower appraisal fee."
+**Purpose**: Displays context-aware, AI-generated insights.
 
-### 3.3. Right Panel: Chat Interface
+- **In Comparison Mode**: After user inputs data and clicks "Generate Analysis," this section shows a detailed breakdown of which loan is better and why
+- **In Live Assistant Mode**: This section updates in real-time with negotiation tactics based on the live conversation transcript. Examples:
+  - **"Suggestion"**: "Ask the loan officer if they can waive the application fee."
+  - **"Clarification Needed"**: "Request a specific breakdown of the 'Processing Fee'."
 
-**Purpose**: Allows the user to communicate directly with a loan officer or support staff.
+### 4.3. Right Panel: Communication Hub
 
-**Layout**:
-- A message window displaying the conversation history
-- A text input field at the bottom for the user to type their message
-- A "Send" button
+**Purpose**: Displays text-based communication, either typed or transcribed.
 
-**Message Display**:
-- User's messages should be aligned to the right
-- Loan officer's messages should be aligned to the left
-- Each message should have a timestamp
+- **In Comparison Mode**: Functions as a standard Chat Interface for asynchronous text communication with a loan officer. User messages are on the right; officer messages are on the left.
+- **In Live Assistant Mode**: Functions as a Live Transcription window, displaying the real-time dialogue between the user and the loan officer.
 
-## 4. Data Flow and Backend Logic
+## 5. Data Flow and Backend Logic
 
-1. **User Input**: The user uploads or manually enters data for two loan estimates via the React frontend
+### 5.1. Data Flow (Comparison Mode)
+
+1. **User Input**: The user uploads or manually enters data for two loan estimates
 2. **API Call**: The frontend sends the structured JSON data for both estimates to a backend endpoint (e.g., `/api/compare`)
-3. **AI Analysis Request**: The Node.js backend formats the loan data into a clear, descriptive prompt and sends it to the Claude API
-   - **Example Prompt**: "Analyze these two loan estimates and provide a summary of the key differences, potential savings, and any red flags. Here is the data for Lender A: {...} and Lender B: {...}."
-4. **AI Response**: The backend receives the analysis from the AI
-5. **Return to Frontend**: The backend sends the AI-generated recommendations back to the frontend
-6. **Display**: The React application displays the recommendations in the designated UI section
-7. **Chat**: Chat messages are sent to the backend via a WebSocket connection and broadcast to the other party (user/loan officer)
+3. **AI Analysis Request**: The Node.js backend formats the data into a prompt and sends it to the LLM API
+4. **Return to Frontend**: The backend receives the analysis and sends the recommendations back to the frontend to be displayed
+
+### 5.2. Data Flow (Live Assistant Mode)
+
+1. **Audio Stream**: The frontend captures audio and streams it to the backend via WebSockets
+2. **Real-time Transcription**: The backend pipes the audio stream to the speech-to-text service and receives text chunks back in real-time
+3. **Broadcast Transcript**: The backend broadcasts the transcribed text to the frontend to be displayed in the right panel
+4. **Real-time AI Analysis**: The backend continuously sends the updated transcript to the LLM API with a prompt to generate negotiation advice
+5. **Broadcast Recommendations**: The AI's tactical suggestions are received by the backend and immediately broadcast to the frontend to be displayed in the bottom recommendation panel
