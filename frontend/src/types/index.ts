@@ -1,0 +1,72 @@
+export interface LoanEstimate {
+  lenderName: string;
+  interestRate: number;
+  points: number;
+  pointsCost: number;
+  originationFee: number;
+  applicationFee: number;
+  processingFee: number;
+  underwritingFee: number;
+  appraisalFee: number;
+  titleInsurance: number;
+  escrowDeposit: number;
+  otherFees: number;
+  totalClosingCosts: number;
+  monthlyPayment: number;
+  loanAmount: number;
+  term: number;
+}
+
+export interface ComparisonResult {
+  recommendation: "lenderA" | "lenderB" | "similar";
+  reasoning: string;
+  savings: {
+    monthly: number;
+    total: number;
+  };
+  breakdown: {
+    interestRateComparison: string;
+    pointsComparison: string;
+    feesComparison: string;
+  };
+}
+
+export interface ChatMessage {
+  id: string;
+  text: string;
+  sender: "user" | "officer";
+  timestamp: Date;
+}
+
+export interface TranscriptionMessage {
+  id: string;
+  text: string;
+  speaker: "user" | "officer";
+  timestamp: Date;
+  confidence: number;
+}
+
+export interface NegotiationSuggestion {
+  id: string;
+  type: "suggestion" | "clarification" | "warning" | "opportunity";
+  text: string;
+  timestamp: Date;
+  priority: "low" | "medium" | "high";
+}
+
+export type AppMode = "comparison" | "live-assistant";
+
+export interface AppState {
+  mode: AppMode;
+  loanEstimates: {
+    lenderA: LoanEstimate | null;
+    lenderB: LoanEstimate | null;
+  };
+  comparisonResult: ComparisonResult | null;
+  chatMessages: ChatMessage[];
+  transcriptionMessages: TranscriptionMessage[];
+  negotiationSuggestions: NegotiationSuggestion[];
+  isRecording: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
