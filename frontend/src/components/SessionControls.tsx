@@ -84,7 +84,7 @@ const SessionActive: React.FC<SessionActiveProps> = ({
       <div className="flex items-center space-x-2 text-green-600">
         <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
         <span className="font-medium">
-          On Call with Mike from {lenderInfo.name}
+          On Call with {currentLender === 'lenderA' ? 'Sarah' : 'Mike'} from {lenderInfo.name}
         </span>
         {lenderInfo.rate && (
           <span className="text-sm text-green-500">
@@ -107,6 +107,7 @@ const SessionControls: React.FC = () => {
   const {
     sessionState,
     webrtcConnection,
+    currentLender,
     setSessionState,
     setWebRTCConnection,
     clearWebRTCConnection,
@@ -211,11 +212,12 @@ const SessionControls: React.FC = () => {
 
         const selectedLenderData = lender === 'lenderA' ? loanData.lenderA : loanData.lenderB;
         
-        // Configure the AI as Mike from the selected lender
+        // Configure the AI as loan officer from the selected lender
+        const loanOfficerName = lender === 'lenderA' ? 'Sarah Davis' : 'Mike Johnson';
         const sessionUpdate = {
           type: 'session.update',
           session: {
-            instructions: `You are Mike Johnson, a loan officer from ${selectedLenderData.bankName}. You sent a loan estimate to the customer yesterday and are now calling to follow up.
+            instructions: `You are ${loanOfficerName}, a loan officer from ${selectedLenderData.bankName}. You sent a loan estimate to the customer yesterday and are now calling to follow up.
 
 Your personality:
 - Friendly and professional
@@ -259,7 +261,7 @@ Remember: You've already built rapport with this customer. This is a follow-up c
         };
         
         dataChannel.send(JSON.stringify(sessionUpdate));
-        console.log(`Configured AI as Mike from ${selectedLenderData.bankName}`);
+        console.log(`Configured AI as ${loanOfficerName} from ${selectedLenderData.bankName}`);
         
         // Trigger Mike's follow-up greeting after a short delay
         setTimeout(() => {
@@ -270,7 +272,7 @@ Remember: You've already built rapport with this customer. This is a follow-up c
               role: 'user',
               content: [{
                 type: 'input_text',
-                text: `[System: You are Mike from ${selectedLenderData.bankName}. Call the customer to follow up on the loan estimate you sent yesterday. Start with a warm greeting, mention you sent the ${selectedLenderData.rate} rate offer, and ask what they thought about it.]`
+                text: `[System: You are ${loanOfficerName.split(' ')[0]} from ${selectedLenderData.bankName}. Call the customer to follow up on the loan estimate you sent yesterday. Start with a warm greeting, mention you sent the ${selectedLenderData.rate} rate offer, and ask what they thought about it.]`
               }]
             }
           };
@@ -281,7 +283,7 @@ Remember: You've already built rapport with this customer. This is a follow-up c
           };
           dataChannel.send(JSON.stringify(triggerResponse));
           
-          console.log('Triggered Mike\'s initial greeting');
+          console.log(`Triggered ${loanOfficerName.split(' ')[0]}'s initial greeting`);
         }, 1000);
       });
 

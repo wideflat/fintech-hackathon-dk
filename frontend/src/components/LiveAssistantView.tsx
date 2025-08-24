@@ -77,7 +77,7 @@ const LiveAssistantView: React.FC = () => {
               </div>
             </div>
             <div className="text-xs text-blue-600">
-              Mike is following up on yesterday's estimate
+              {currentLender === 'lenderA' ? 'Sarah' : 'Mike'} is following up on yesterday's estimate
             </div>
           </div>
         </div>

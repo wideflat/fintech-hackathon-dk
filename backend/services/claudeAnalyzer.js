@@ -88,6 +88,9 @@ class ClaudeAnalyzer {
     let lenderInfo = '';
     let competitorInfo = '';
     
+    // Determine loan officer name first
+    const loanOfficerName = lenderContext && lenderContext.currentLender === 'lenderA' ? 'Sarah' : 'Mike';
+    
     if (lenderContext && lenderContext.currentLender && lenderContext.lenderData) {
       const current = lenderContext.lenderData[lenderContext.currentLender];
       const competitor = lenderContext.currentLender === 'lenderA' 
@@ -96,7 +99,7 @@ class ClaudeAnalyzer {
         
       lenderInfo = `
 CURRENT CALL CONTEXT:
-- You're speaking with Mike from ${current.name}
+- You're speaking with ${loanOfficerName} from ${current.name}
 - Current offer: ${current.rate} interest rate${current.hasPoints ? ` with ${current.points}` : ' with no points'}
 - Loan amount: $500,000 (30-year fixed)`;
 
@@ -104,8 +107,7 @@ CURRENT CALL CONTEXT:
 COMPETING OFFER TO LEVERAGE:
 - ${competitor.name}: ${competitor.rate} interest rate${competitor.hasPoints ? ` with ${competitor.points}` : ' with no points'}`;
     }
-
-    return `You are a loan negotiation expert coaching a customer in real-time. Based on what Mike the loan officer just said, tell the customer exactly what to say next to get the best deal.
+    return `You are a loan negotiation expert coaching a customer in real-time. Based on what ${loanOfficerName} the loan officer just said, tell the customer exactly what to say next to get the best deal.
 ${lenderInfo}${competitorInfo}
 
 CONVERSATION:
@@ -114,7 +116,7 @@ ${conversationText}
 Provide the customer's next response in this exact JSON format:
 {
   "negotiationPotential": "Low|Medium|High",
-  "mainRecommendation": "The exact words or question the customer should say next to Mike",
+  "mainRecommendation": "The exact words or question the customer should say next to the loan officer",
   "quickTip": "Brief coaching tip on tone or strategy (optional)"
 }
 
@@ -126,7 +128,7 @@ Focus on the BEST response to leverage:
 5. Customer's strengths (credit score, relationship, etc.)
 6. Points vs no-points trade-offs
 
-Make the mainRecommendation conversational, confident, and under 40 words. Write it as if the customer is speaking directly to Mike.`;
+Make the mainRecommendation conversational, confident, and under 40 words. Write it as if the customer is speaking directly to ${loanOfficerName}.`;
   }
 
   parseAnalysisResponse(responseText) {
