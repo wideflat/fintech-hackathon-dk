@@ -3,6 +3,7 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const conversationStore = require('./services/conversationStore');
+const claudeAnalyzer = require('./services/claudeAnalyzer');
 require('dotenv').config();
 
 const app = express();
@@ -266,6 +267,41 @@ app.post('/api/conversation/current/end', async (req, res) => {
     message: 'Current session ended',
     finalStats: stats 
   });
+});
+
+// Analyze conversation for negotiation opportunities
+app.post('/api/analyze-conversation', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    
+    // Use current session if no sessionId provided
+    const targetSessionId = sessionId || currentSessionId;
+    
+    if (!targetSessionId) {
+      return res.status(400).json({ error: 'No session ID provided and no active session' });
+    }
+    
+    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(targetSessionId);
+    res.json(result);
+  } catch (error) {
+    console.error('Analysis endpoint error:', error);
+    res.status(500).json({ error: 'Failed to analyze conversation' });
+  }
+});
+
+// Analyze current active conversation
+app.post('/api/analyze-current', async (req, res) => {
+  try {
+    if (!currentSessionId) {
+      return res.status(404).json({ error: 'No active session' });
+    }
+    
+    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(currentSessionId);
+    res.json(result);
+  } catch (error) {
+    console.error('Current analysis endpoint error:', error);
+    res.status(500).json({ error: 'Failed to analyze current conversation' });
+  }
 });
 
 // Health check endpoint
