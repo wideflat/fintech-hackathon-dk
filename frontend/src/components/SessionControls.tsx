@@ -212,6 +212,10 @@ const SessionControls: React.FC = () => {
       };
       
       addRealtimeEvent(clientEvent);
+      
+      // Send client event to backend for terminal logging
+      webrtcService.sendEventToBackendLog(clientEvent);
+      
       webrtcService.sendTextMessage(dataChannel, text);
     } else {
       console.warn('Cannot send message: session not active or data channel unavailable');

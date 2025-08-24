@@ -176,10 +176,30 @@ export class WebRTCService {
 
         onEvent(event);
         console.log('Received server event:', event.type);
+        
+        // Send to backend for terminal logging
+        this.sendEventToBackendLog(event);
       } catch (error) {
         console.error('Failed to parse server event:', error);
       }
     });
+  }
+
+  sendEventToBackendLog(event: RealtimeEvent): void {
+    try {
+      fetch(`${this.baseUrl}/api/log-conversation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ event }),
+      }).catch(error => {
+        // Silently fail if backend logging is unavailable
+        console.debug('Backend logging unavailable:', error);
+      });
+    } catch (error) {
+      console.debug('Failed to send event to backend log:', error);
+    }
   }
 
   cleanup(
