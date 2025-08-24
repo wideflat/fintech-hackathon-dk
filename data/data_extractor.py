@@ -117,7 +117,7 @@ def extract_loan_info(pdf_path):
             loan_amount_points_value = "$4,000"
         else:
             # Try pattern matching as backup
-            loan_amount_points_value = "Not Found"
+            loan_amount_points_value ="0"
             if loan_amount_points_match:
                 # Handle different pattern groups
                 if loan_amount_points_match.lastindex == 2:  # Pattern with two groups (%, $)
@@ -133,7 +133,7 @@ def extract_loan_info(pdf_path):
             "Loan Amount": f"${loan_amount_match.group(1)}" if loan_amount_match else "Not Found",
             "Interest Rate": f"{interest_rate_match.group(1)}%" if interest_rate_match else "Not Found",
             "Points": f"{points_match.group(1)}%" if points_match else "Not Found",
-            "Loan Amount (Points)": loan_amount_points_value,
+            "Cost of the Points": loan_amount_points_value,
             "Total Closing Costs": f"${closing_costs_match.group(1)}" if closing_costs_match else "Not Found",
         }
 
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             print(f"{'Field':<20} {'Lender A':<15} {'Lender B':<15}")
             print("-" * 50)
             
-            fields_to_compare = ["Loan Amount", "Interest Rate", "Points", "Loan Amount (Points)", "Total Closing Costs"]
+            fields_to_compare = ["Loan Amount", "Interest Rate", "Coast of the Points", "Total Closing Costs"]
             for field in fields_to_compare:
                 lender_a_val = lender_a_data.get(field, "Not Found")
                 lender_b_val = lender_b_data.get(field, "Not Found")

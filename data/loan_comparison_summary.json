@@ -1,0 +1,48 @@
+{
+  "loan_comparison_summary": {
+    "title": "LOAN COMPARISON SUMMARY",
+    "lenders": {
+      "lender_a": {
+        "loan_amount": 500000,
+        "interest_rate": "4.875%",
+        "points": "Not Found",
+        "loan_amount_points": 0,
+        "total_closing_costs": "Not Found"
+      },
+      "lender_b": {
+        "loan_amount": 500000,
+        "interest_rate": "4.750%",
+        "points": "1%",
+        "loan_amount_points": 4000,
+        "total_closing_costs": "Not Found"
+      }
+    },
+    "fields": [
+      {
+        "field": "Loan Amount",
+        "lender_a": "$500,000",
+        "lender_b": "$500,000"
+      },
+      {
+        "field": "Interest Rate",
+        "lender_a": "4.875%",
+        "lender_b": "4.750%"
+      },
+      {
+        "field": "Points",
+        "lender_a": "Not Found",
+        "lender_b": "1%"
+      },
+      {
+        "field": "Loan Amount (Points)",
+        "lender_a": "$0",
+        "lender_b": "$4,000"
+      },
+      {
+        "field": "Total Closing Costs",
+        "lender_a": "Not Found",
+        "lender_b": "Not Found"
+      }
+    ]
+  }
+}
