@@ -113,9 +113,9 @@ const LiveAssistantView: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Session Status & Metrics */}
-        <div className="w-full lg:w-80 bg-white border-r border-secondary-200 overflow-auto">
+        <div className="w-80 bg-white border-r border-secondary-200 overflow-auto shrink-0">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
               <MessageSquare className="text-primary-600" size={20} />
@@ -203,8 +203,8 @@ const LiveAssistantView: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel - Negotiation Suggestions */}
-        <div className="flex-1 bg-secondary-50 border-l border-secondary-200 overflow-auto">
+        {/* Main Panel - Negotiation Suggestions */}
+        <div className="flex-1 bg-secondary-50 overflow-auto">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
               <Lightbulb className="text-primary-600" size={20} />

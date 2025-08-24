@@ -3,7 +3,6 @@ import Sidebar from "./components/Sidebar";
 import ComparisonView from "./components/ComparisonView";
 import CompactComparisonView from "./components/CompactComparisonView";
 import LiveAssistantView from "./components/LiveAssistantView";
-import ChatPanel from "./components/ChatPanel";
 import { useAppStore } from "./store/useAppStore";
 
 const App: React.FC = () => {
@@ -15,26 +14,12 @@ const App: React.FC = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left Panel - Main View */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {mode === "comparison" ? (
-            <CompactComparisonView />
-          ) : (
-            <LiveAssistantView />
-          )}
-        </div>
-
-        {/* Right Panel - Communication */}
-        <div className="w-full lg:w-96 border-l border-secondary-200">
-          {mode === "comparison" ? (
-            <ChatPanel />
-          ) : (
-            <div className="h-full bg-secondary-50">
-              {/* Live Assistant mode doesn't show chat panel */}
-            </div>
-          )}
-        </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {mode === "comparison" ? (
+          <CompactComparisonView />
+        ) : (
+          <LiveAssistantView />
+        )}
       </div>
 
       {/* Loading Overlay */}
