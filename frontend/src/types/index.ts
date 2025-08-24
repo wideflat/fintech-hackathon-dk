@@ -116,4 +116,6 @@ export interface AppState {
   claudeAnalysis: ClaudeAnalysis;
   // Current Lender State
   currentLender: "lenderA" | "lenderB" | null;
+  // Landing Page State
+  showLanding: boolean;
 }

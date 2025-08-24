@@ -47,6 +47,8 @@ interface AppStore extends AppState {
   clearAnalysis: () => void;
   // Lender Actions
   setCurrentLender: (lender: "lenderA" | "lenderB" | null) => void;
+  // Landing Page Actions
+  setShowLanding: (show: boolean) => void;
   reset: () => void;
 }
 
@@ -83,6 +85,7 @@ const initialState: AppState = {
   webrtcConnection: initialWebRTCConnection,
   claudeAnalysis: initialClaudeAnalysis,
   currentLender: null,
+  showLanding: true,
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -199,6 +202,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   // Lender Actions
   setCurrentLender: (currentLender) => set({ currentLender }),
+
+  // Landing Page Actions
+  setShowLanding: (showLanding) => set({ showLanding }),
 
   reset: () => set(initialState),
 }));

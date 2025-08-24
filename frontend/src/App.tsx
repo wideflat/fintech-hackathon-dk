@@ -3,10 +3,16 @@ import Sidebar from "./components/Sidebar";
 import ComparisonView from "./components/ComparisonView";
 import CompactComparisonView from "./components/CompactComparisonView";
 import LiveAssistantView from "./components/LiveAssistantView";
+import LandingPage from "./components/LandingPage";
 import { useAppStore } from "./store/useAppStore";
 
 const App: React.FC = () => {
-  const { mode, isLoading, error } = useAppStore();
+  const { mode, isLoading, error, showLanding } = useAppStore();
+
+  // Show landing page if flag is true
+  if (showLanding) {
+    return <LandingPage />;
+  }
 
   return (
     <div className="flex h-screen bg-secondary-50">
