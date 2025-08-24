@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -5,7 +7,6 @@ const { Server } = require('socket.io');
 const conversationStore = require('./services/conversationStore');
 const claudeAnalyzer = require('./services/claudeAnalyzer');
 const loanComparisonRoutes = require('./routes/loanComparison');
-require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
@@ -499,6 +500,10 @@ app.post('/api/pdf-analysis/compare', async (req, res) => {
     const recommendation = lenderAScore > lenderBScore ? "lenderA" : "lenderB";
     const totalSavings = Math.abs(monthlyDiff) * 12 * 30;
     
+    // Get actionable suggestions from Claude
+    const claudeService = require('./services/claudeService');
+    const suggestionsResult = await claudeService.getActionableSuggestions(lenderA, lenderB);
+    
     const result = {
       recommendation,
       reasoning: lenderAScore > lenderBScore ? 
@@ -525,7 +530,8 @@ app.post('/api/pdf-analysis/compare', async (req, res) => {
         lenderBScore: Math.round(lenderBScore * 100),
         criteria: ["Interest Rate", "Points", "Closing Costs"],
         weights: [40, 30, 30]
-      }
+      },
+      actionableSuggestions: suggestionsResult.success ? suggestionsResult.suggestions : []
     };
     
     res.json({

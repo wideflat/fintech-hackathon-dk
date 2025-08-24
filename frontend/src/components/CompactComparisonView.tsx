@@ -434,25 +434,39 @@ const CompactComparisonView: React.FC = () => {
                   </table>
                 </div>
 
-                {/* Summary Notes */}
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">
-                    Summary Notes:
+                {/* Actionable Next Steps */}
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-semibold text-green-800 mb-3 flex items-center">
+                    <span className="mr-2">🎯</span>
+                    Actionable Next Steps:
                   </h4>
-                  <div className="text-sm text-blue-700 space-y-1">
-                    <div>
-                      • Interest Rate Difference:{" "}
-                      {comparisonResult.breakdown.interestRateComparison}
+                  {comparisonResult.actionableSuggestions && comparisonResult.actionableSuggestions.length > 0 ? (
+                    <div className="space-y-2">
+                      {comparisonResult.actionableSuggestions.map((suggestion, index) => (
+                        <div key={index} className="flex items-start">
+                          <span className="text-green-600 mr-2 mt-0.5 flex-shrink-0">•</span>
+                          <span className="text-sm text-green-700 leading-relaxed">
+                            {suggestion}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      • Points Difference:{" "}
-                      {comparisonResult.breakdown.pointsComparison}
+                  ) : (
+                    <div className="text-sm text-green-700 space-y-1">
+                      <div>
+                        • Interest Rate Difference:{" "}
+                        {comparisonResult.breakdown.interestRateComparison}
+                      </div>
+                      <div>
+                        • Points Difference:{" "}
+                        {comparisonResult.breakdown.pointsComparison}
+                      </div>
+                      <div>
+                        • Fees Difference:{" "}
+                        {comparisonResult.breakdown.feesComparison}
+                      </div>
                     </div>
-                    <div>
-                      • Fees Difference:{" "}
-                      {comparisonResult.breakdown.feesComparison}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ) : (
