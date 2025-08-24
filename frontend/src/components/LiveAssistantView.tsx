@@ -176,13 +176,26 @@ const LiveAssistantView: React.FC = () => {
 
         {/* Main Panel - Negotiation Suggestions */}
         <div className="flex-1 bg-secondary-50 overflow-auto">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
-              <Lightbulb className="text-primary-600" size={20} />
-              <span>AI Suggestions</span>
-            </h3>
+          <div className="p-6 flex gap-6">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
+                <Lightbulb className="text-primary-600" size={20} />
+                <span>AI Suggestions</span>
+              </h3>
 
-            <NegotiationSuggestions />
+              <NegotiationSuggestions />
+            </div>
+
+            {/* Phone Photo - Only show when call is active */}
+            {isConnected && currentLender && (
+              <div className="w-64 flex-shrink-0">
+                <img 
+                  src={currentLender === 'lenderA' ? '/phone_with_lender_A.png' : '/phone_with_lender_B.png'}
+                  alt={`On call with ${currentLender === 'lenderA' ? 'Sarah' : 'Mike'}`}
+                  className="w-full h-auto rounded-lg shadow-lg"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
