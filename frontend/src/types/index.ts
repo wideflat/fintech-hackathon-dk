@@ -61,19 +61,10 @@ export interface NegotiationSuggestion {
   priority: "low" | "medium" | "high";
 }
 
-export interface ClaudeAnalysisOpportunity {
-  area: string;
-  currentTerms: string;
-  suggestion: string;
-  leverage: string;
-}
-
 export interface ClaudeAnalysis {
   negotiationPotential: "Low" | "Medium" | "High" | null;
-  opportunities: ClaudeAnalysisOpportunity[];
-  strategies: string[];
-  warningFlags: string[];
-  nextSteps: string;
+  mainRecommendation: string | null;
+  quickTip: string | null;
   lastUpdated: Date | null;
   isAnalyzing: boolean;
 }

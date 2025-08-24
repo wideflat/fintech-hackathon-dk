@@ -57,10 +57,8 @@ const initialWebRTCConnection: WebRTCConnection = {
 
 const initialClaudeAnalysis: ClaudeAnalysis = {
   negotiationPotential: null,
-  opportunities: [],
-  strategies: [],
-  warningFlags: [],
-  nextSteps: "",
+  mainRecommendation: null,
+  quickTip: null,
   lastUpdated: null,
   isAnalyzing: false,
 };

@@ -84,38 +84,26 @@ class ClaudeAnalyzer {
       `${m.role === 'user' ? 'CUSTOMER' : 'LOAN OFFICER'}: ${m.content}`
     ).join('\n');
 
-    return `You are a loan negotiation expert. Analyze this conversation between a customer and loan officer.
+    return `You are a loan negotiation expert coaching a customer in real-time. Based on what the loan officer just said, tell the customer exactly what to say next.
 
 CONVERSATION:
 ${conversationText}
 
-Provide negotiation analysis in this exact JSON format:
+Provide the customer's next response in this exact JSON format:
 {
   "negotiationPotential": "Low|Medium|High",
-  "opportunities": [
-    {
-      "area": "specific area like Interest Rate",
-      "currentTerms": "what's currently offered",
-      "suggestion": "specific action to take",
-      "leverage": "why this could work"
-    }
-  ],
-  "strategies": [
-    "Specific strategy 1",
-    "Specific strategy 2"
-  ],
-  "warningFlags": [
-    "Any concerning terms to watch for"
-  ],
-  "nextSteps": "What the customer should do next"
+  "mainRecommendation": "The exact words or question the customer should say next to the loan officer",
+  "quickTip": "Brief coaching tip on tone or strategy (optional)"
 }
 
-Focus on:
-1. Interest rate reduction opportunities
-2. Fee waivers (application, origination, processing)
-3. Better payment terms
-4. Competing offers as leverage
-5. Credit score advantages`;
+Focus on the BEST response to leverage:
+1. Interest rate negotiation opportunities  
+2. Fee reduction or waiver requests
+3. Better terms or conditions
+4. Competitive offers as leverage
+5. Customer's strengths (credit score, relationship, etc.)
+
+Make the mainRecommendation conversational, confident, and under 40 words. Write it as if the customer is speaking directly to the loan officer.`;
   }
 
   parseAnalysisResponse(responseText) {
@@ -128,10 +116,8 @@ Focus on:
     } catch (error) {
       return {
         negotiationPotential: "Medium",
-        opportunities: [],
-        strategies: ["Continue gathering information about loan terms"],
-        warningFlags: [],
-        nextSteps: "Ask for specific rate and fee details"
+        mainRecommendation: "Could you provide a detailed breakdown of all the fees and interest rates?",
+        quickTip: "Getting specific numbers helps you find negotiation opportunities"
       };
     }
   }
