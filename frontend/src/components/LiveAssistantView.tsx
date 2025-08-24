@@ -66,17 +66,17 @@ const LiveAssistantView: React.FC = () => {
         <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium text-blue-900">
+              <div className="text-lg font-semibold text-blue-900">
                 {currentLender === 'lenderA' ? 'Discussing Loan Estimate from Lender A:' : 'Discussing Loan Estimate from Lender B:'}
               </div>
-              <div className="text-xs text-blue-700 mt-1">
+              <div className="text-base font-medium text-blue-700 mt-2">
                 {currentLender === 'lenderA' 
                   ? '$500,000 @ 4.875% with no points - First National Bank'
                   : '$500,000 @ 4.750% with 1% points ($4,000) - Premier Lending'
                 }
               </div>
             </div>
-            <div className="text-xs text-blue-600">
+            <div className="text-sm font-medium text-blue-600">
               {currentLender === 'lenderA' ? 'Sarah' : 'Mike'} is following up on yesterday's estimate
             </div>
           </div>
