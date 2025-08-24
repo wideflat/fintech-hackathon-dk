@@ -1,0 +1,29 @@
+{
+  "name": "fintech-hackathon-dk",
+  "version": "1.0.0",
+  "description": "Loan comparison and negotiation assistant",
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"yellow,cyan\" \"npm run backend\" \"npm run frontend\"",
+    "frontend": "cd frontend && npm start",
+    "backend": "cd backend && npm start",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "clean": "rm -rf node_modules frontend/node_modules backend/node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/fintech-hackathon-dk.git"
+  },
+  "keywords": [
+    "fintech",
+    "loan",
+    "comparison",
+    "negotiation",
+    "ai",
+    "assistant"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

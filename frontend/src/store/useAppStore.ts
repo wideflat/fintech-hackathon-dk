@@ -7,6 +7,9 @@ import {
   ChatMessage,
   TranscriptionMessage,
   NegotiationSuggestion,
+  RealtimeEvent,
+  SessionState,
+  WebRTCConnection,
 } from "../types";
 
 interface AppStore extends AppState {
@@ -25,14 +28,27 @@ interface AppStore extends AppState {
   addNegotiationSuggestion: (
     suggestion: Omit<NegotiationSuggestion, "id" | "timestamp">
   ) => void;
+  addRealtimeEvent: (event: RealtimeEvent) => void;
   clearChatMessages: () => void;
   clearTranscriptionMessages: () => void;
   clearNegotiationSuggestions: () => void;
+  clearRealtimeEvents: () => void;
   setRecording: (isRecording: boolean) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  // WebRTC Actions
+  setSessionState: (state: SessionState) => void;
+  setWebRTCConnection: (connection: Partial<WebRTCConnection>) => void;
+  clearWebRTCConnection: () => void;
   reset: () => void;
 }
+
+const initialWebRTCConnection: WebRTCConnection = {
+  peerConnection: null,
+  dataChannel: null,
+  audioElement: null,
+  localStream: null,
+};
 
 const initialState: AppState = {
   mode: "comparison",
@@ -44,9 +60,12 @@ const initialState: AppState = {
   chatMessages: [],
   transcriptionMessages: [],
   negotiationSuggestions: [],
+  realtimeEvents: [],
   isRecording: false,
   isLoading: false,
   error: null,
+  sessionState: "idle",
+  webrtcConnection: initialWebRTCConnection,
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -109,17 +128,37 @@ export const useAppStore = create<AppStore>((set, get) => ({
       ],
     })),
 
+  addRealtimeEvent: (event) =>
+    set((state) => ({
+      realtimeEvents: [event, ...state.realtimeEvents],
+    })),
+
   clearChatMessages: () => set({ chatMessages: [] }),
 
   clearTranscriptionMessages: () => set({ transcriptionMessages: [] }),
 
   clearNegotiationSuggestions: () => set({ negotiationSuggestions: [] }),
 
+  clearRealtimeEvents: () => set({ realtimeEvents: [] }),
+
   setRecording: (isRecording) => set({ isRecording }),
 
   setLoading: (isLoading) => set({ isLoading }),
 
   setError: (error) => set({ error }),
+
+  // WebRTC Actions
+  setSessionState: (sessionState) => set({ sessionState }),
+
+  setWebRTCConnection: (connection) =>
+    set((state) => ({
+      webrtcConnection: {
+        ...state.webrtcConnection,
+        ...connection,
+      },
+    })),
+
+  clearWebRTCConnection: () => set({ webrtcConnection: initialWebRTCConnection }),
 
   reset: () => set(initialState),
 }));
