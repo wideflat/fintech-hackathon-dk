@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Zap, ZapOff, Send } from 'lucide-react';
+import React from 'react';
+import { Zap, ZapOff } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { webrtcService } from '../services/webrtcService';
 
@@ -38,52 +38,23 @@ const SessionStopped: React.FC<SessionStoppedProps> = ({ startSession }) => {
 
 interface SessionActiveProps {
   stopSession: () => void;
-  sendTextMessage: (message: string) => void;
 }
 
 const SessionActive: React.FC<SessionActiveProps> = ({ 
-  stopSession, 
-  sendTextMessage 
+  stopSession
 }) => {
-  const [message, setMessage] = useState('');
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      sendTextMessage(message.trim());
-      setMessage('');
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && message.trim()) {
-      handleSendMessage();
-    }
-  };
-
   return (
     <div className="flex items-center justify-center w-full h-full gap-3">
-      <input
-        type="text"
-        placeholder="send a text message..."
-        className="flex-1 px-4 py-3 border border-secondary-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-      />
-      <button
-        onClick={handleSendMessage}
-        disabled={!message.trim()}
-        className="flex items-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-secondary-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors duration-200"
-      >
-        <Send size={18} />
-        <span>send text</span>
-      </button>
+      <div className="flex items-center space-x-2 text-green-600">
+        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+        <span className="font-medium">Live Assistant Active - Listening...</span>
+      </div>
       <button
         onClick={stopSession}
         className="flex items-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors duration-200"
       >
         <ZapOff size={18} />
-        <span>disconnect</span>
+        <span>Disconnect</span>
       </button>
     </div>
   );
@@ -246,7 +217,6 @@ const SessionControls: React.FC = () => {
       {isSessionActive ? (
         <SessionActive
           stopSession={stopSession}
-          sendTextMessage={sendTextMessage}
         />
       ) : (
         <SessionStopped startSession={startSession} />
