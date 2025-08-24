@@ -61,6 +61,23 @@ export interface NegotiationSuggestion {
   priority: "low" | "medium" | "high";
 }
 
+export interface ClaudeAnalysisOpportunity {
+  area: string;
+  currentTerms: string;
+  suggestion: string;
+  leverage: string;
+}
+
+export interface ClaudeAnalysis {
+  negotiationPotential: "Low" | "Medium" | "High" | null;
+  opportunities: ClaudeAnalysisOpportunity[];
+  strategies: string[];
+  warningFlags: string[];
+  nextSteps: string;
+  lastUpdated: Date | null;
+  isAnalyzing: boolean;
+}
+
 export interface RealtimeEvent {
   event_id: string;
   type: string;
@@ -104,4 +121,6 @@ export interface AppState {
   // WebRTC Session State
   sessionState: SessionState;
   webrtcConnection: WebRTCConnection;
+  // Claude Analysis State
+  claudeAnalysis: ClaudeAnalysis;
 }

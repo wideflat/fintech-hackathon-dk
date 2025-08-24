@@ -10,6 +10,7 @@ import {
   RealtimeEvent,
   SessionState,
   WebRTCConnection,
+  ClaudeAnalysis,
 } from "../types";
 
 interface AppStore extends AppState {
@@ -40,6 +41,10 @@ interface AppStore extends AppState {
   setSessionState: (state: SessionState) => void;
   setWebRTCConnection: (connection: Partial<WebRTCConnection>) => void;
   clearWebRTCConnection: () => void;
+  // Claude Analysis Actions
+  setClaudeAnalysis: (analysis: Partial<ClaudeAnalysis>) => void;
+  setAnalyzing: (isAnalyzing: boolean) => void;
+  clearAnalysis: () => void;
   reset: () => void;
 }
 
@@ -48,6 +53,16 @@ const initialWebRTCConnection: WebRTCConnection = {
   dataChannel: null,
   audioElement: null,
   localStream: null,
+};
+
+const initialClaudeAnalysis: ClaudeAnalysis = {
+  negotiationPotential: null,
+  opportunities: [],
+  strategies: [],
+  warningFlags: [],
+  nextSteps: "",
+  lastUpdated: null,
+  isAnalyzing: false,
 };
 
 const initialState: AppState = {
@@ -66,6 +81,7 @@ const initialState: AppState = {
   error: null,
   sessionState: "idle",
   webrtcConnection: initialWebRTCConnection,
+  claudeAnalysis: initialClaudeAnalysis,
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -159,6 +175,26 @@ export const useAppStore = create<AppStore>((set, get) => ({
     })),
 
   clearWebRTCConnection: () => set({ webrtcConnection: initialWebRTCConnection }),
+
+  // Claude Analysis Actions
+  setClaudeAnalysis: (analysis) =>
+    set((state) => ({
+      claudeAnalysis: {
+        ...state.claudeAnalysis,
+        ...analysis,
+        lastUpdated: new Date(),
+      },
+    })),
+
+  setAnalyzing: (isAnalyzing) =>
+    set((state) => ({
+      claudeAnalysis: {
+        ...state.claudeAnalysis,
+        isAnalyzing,
+      },
+    })),
+
+  clearAnalysis: () => set({ claudeAnalysis: initialClaudeAnalysis }),
 
   reset: () => set(initialState),
 }));

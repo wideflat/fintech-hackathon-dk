@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Mic,
   MicOff,
@@ -14,16 +14,34 @@ import { useAppStore } from "../store/useAppStore";
 import SessionControls from "./SessionControls";
 import EventLog from "./EventLog";
 import NegotiationSuggestions from "./NegotiationSuggestions";
+import { analysisService } from "../services/analysisService";
 
 const LiveAssistantView: React.FC = () => {
   const {
     realtimeEvents,
     sessionState,
     addNegotiationSuggestion,
+    clearAnalysis,
   } = useAppStore();
 
   // Connection status based on actual session state
   const isConnected = sessionState === 'connected';
+
+  // Initialize analysis service on component mount
+  useEffect(() => {
+    analysisService.connect();
+    
+    return () => {
+      analysisService.disconnect();
+    };
+  }, []);
+
+  // Clear analysis when session state changes
+  useEffect(() => {
+    if (sessionState === 'idle' || sessionState === 'error') {
+      clearAnalysis();
+    }
+  }, [sessionState, clearAnalysis]);
 
   return (
     <div className="flex-1 flex flex-col h-screen">
