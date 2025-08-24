@@ -44,4 +44,8 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
+# Conversation JSON files
+backend/conversations/
+*.conversation.json
+
 .claude/

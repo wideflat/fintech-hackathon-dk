@@ -240,10 +240,30 @@ This approach provides immediate value by helping customers identify and act on 
 
 ### Step 5: Connect Frontend to Backend Analysis
 **File:** `/frontend/src/services/analysisService.ts`
-- Create service for requesting analysis from backend
-- Handle real-time updates via WebSocket/polling
-- Manage analysis state in frontend store
-- Integrate with existing WebRTC event flow
+
+This step creates the bridge between your React frontend and the backend analysis system:
+
+**1. Create service for requesting analysis from backend**
+- Build a TypeScript service that sends HTTP requests to your backend's analysis endpoints
+- Functions like `analyzeConversation(sessionId)` that call `/api/analyze-conversation`
+- Handle the API responses and errors
+
+**2. Handle real-time updates via WebSocket/polling**
+- Since negotiation analysis should happen in real-time during conversations, you need live updates
+- Either use Socket.IO (WebSocket) for instant updates, or polling (checking every few seconds)
+- When the backend finds new negotiation opportunities, instantly show them in the UI
+
+**3. Manage analysis state in frontend store**
+- Store the analysis results (negotiation opportunities, leverage points) in your app's state management
+- Keep track of loading states, errors, and the latest analysis data
+- Make this data available to all components that need it
+
+**4. Integrate with existing WebRTC event flow**
+- Connect the analysis system to your current voice conversation system
+- Trigger analysis automatically when certain voice events happen
+- Ensure analysis requests happen seamlessly alongside the voice chat
+
+**End result:** Your frontend will automatically request negotiation analysis during voice conversations and display the results in real-time, without the user having to manually ask for analysis.
 
 ### Step 6: Add Analysis Triggers and Optimization
 - Implement smart triggering based on conversation context
