@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import SessionControls from "./SessionControls";
-import EventLog from "./EventLog";
 import NegotiationSuggestions from "./NegotiationSuggestions";
 import { analysisService } from "../services/analysisService";
 
@@ -204,15 +203,8 @@ const LiveAssistantView: React.FC = () => {
           </div>
         </div>
 
-        {/* Center Panel - Event Log */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-hidden p-6">
-            <EventLog events={realtimeEvents} />
-          </div>
-        </div>
-
         {/* Right Panel - Negotiation Suggestions */}
-        <div className="w-full lg:w-96 bg-secondary-50 border-l border-secondary-200 overflow-auto">
+        <div className="flex-1 bg-secondary-50 border-l border-secondary-200 overflow-auto">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
               <Lightbulb className="text-primary-600" size={20} />
