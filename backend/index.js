@@ -88,6 +88,56 @@ function extractConversationText(event) {
 let conversationBuffer = '';
 let currentSessionId = null;
 
+// Analysis trigger configuration
+const TRIGGER_KEYWORDS = ['rate', 'interest rate', 'apr', 'fee', 'application fee', 'origination fee', 'negotiate', 'better deal', 'discount', 'refinance', 'lower payment', 'credit score', 'qualification'];
+let messagesSinceLastAnalysis = 0;
+let lastAnalysisTime = 0;
+const ANALYSIS_MESSAGE_THRESHOLD = 10; // Every 5 exchanges (10 messages total)
+const MIN_ANALYSIS_INTERVAL = 30000; // 30 seconds
+
+// Analysis trigger functions
+function shouldTriggerAnalysis(message) {
+  const lowerMessage = message.toLowerCase();
+  return TRIGGER_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
+}
+
+function canTriggerAnalysis() {
+  return Date.now() - lastAnalysisTime > MIN_ANALYSIS_INTERVAL;
+}
+
+async function analyzeAndBroadcast(sessionId, triggerReason) {
+  if (!canTriggerAnalysis()) {
+    console.log(`⏸️ Analysis skipped: too soon (${triggerReason})`);
+    return;
+  }
+  
+  console.log(`🔍 Triggering analysis: ${triggerReason}`);
+  io.emit('analysis-started', { sessionId });
+  
+  try {
+    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(sessionId);
+    if (result.success) {
+      io.emit('analysis-update', {
+        sessionId,
+        analysis: result.analysis,
+        trigger: triggerReason,
+        cached: result.cached,
+        timestamp: new Date().toISOString()
+      });
+      console.log(`✅ Analysis broadcasted to frontend (${result.cached ? 'cached' : 'fresh'})`);
+    } else {
+      io.emit('analysis-error', { sessionId, error: result.error });
+      console.error('❌ Analysis failed:', result.error);
+    }
+  } catch (error) {
+    io.emit('analysis-error', { sessionId, error: error.message });
+    console.error('❌ Analysis exception:', error);
+  }
+  
+  lastAnalysisTime = Date.now();
+  messagesSinceLastAnalysis = 0;
+}
+
 function logConversationToTerminal(event) {
   const text = extractConversationText(event);
   
@@ -130,8 +180,29 @@ function logConversationToTerminal(event) {
   if (currentSessionId) {
     if (event.type === 'conversation.item.input_audio_transcription.completed' && event.transcript) {
       conversationStore.addMessage(currentSessionId, 'user', event.transcript);
+      messagesSinceLastAnalysis++;
+      
+      // Check for keyword triggers in user message
+      if (shouldTriggerAnalysis(event.transcript)) {
+        analyzeAndBroadcast(currentSessionId, `keyword detected: "${event.transcript.substring(0, 50)}..."`);
+      }
+      // Check for message count trigger
+      else if (messagesSinceLastAnalysis >= ANALYSIS_MESSAGE_THRESHOLD) {
+        analyzeAndBroadcast(currentSessionId, `message threshold reached (${messagesSinceLastAnalysis} messages)`);
+      }
+      
     } else if (event.type === 'response.audio_transcript.done' && event.transcript) {
       conversationStore.addMessage(currentSessionId, 'assistant', event.transcript);
+      messagesSinceLastAnalysis++;
+      
+      // Check for keyword triggers in assistant message
+      if (shouldTriggerAnalysis(event.transcript)) {
+        analyzeAndBroadcast(currentSessionId, `keyword detected in response: "${event.transcript.substring(0, 50)}..."`);
+      }
+      // Check for message count trigger
+      else if (messagesSinceLastAnalysis >= ANALYSIS_MESSAGE_THRESHOLD) {
+        analyzeAndBroadcast(currentSessionId, `message threshold reached (${messagesSinceLastAnalysis} messages)`);
+      }
     }
   }
   
@@ -301,6 +372,51 @@ app.post('/api/analyze-current', async (req, res) => {
   } catch (error) {
     console.error('Current analysis endpoint error:', error);
     res.status(500).json({ error: 'Failed to analyze current conversation' });
+  }
+});
+
+// Get latest analysis for a session
+app.get('/api/analysis/:sessionId/latest', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(sessionId);
+    res.json(result);
+  } catch (error) {
+    console.error('Latest analysis endpoint error:', error);
+    res.status(500).json({ error: 'Failed to get latest analysis' });
+  }
+});
+
+// Force analysis with specific reason
+app.post('/api/analyze-force', async (req, res) => {
+  try {
+    const { sessionId, reason = 'manual' } = req.body;
+    const targetSessionId = sessionId || currentSessionId;
+    
+    if (!targetSessionId) {
+      return res.status(400).json({ error: 'No session ID provided and no active session' });
+    }
+    
+    // Force analysis by temporarily bypassing debouncing
+    const originalLastAnalysisTime = lastAnalysisTime;
+    lastAnalysisTime = 0;
+    
+    await analyzeAndBroadcast(targetSessionId, `forced: ${reason}`);
+    
+    // Restore original time to maintain proper debouncing
+    if (originalLastAnalysisTime > 0) {
+      lastAnalysisTime = Date.now();
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Forced analysis triggered',
+      sessionId: targetSessionId,
+      reason 
+    });
+  } catch (error) {
+    console.error('Force analysis endpoint error:', error);
+    res.status(500).json({ error: 'Failed to force analysis' });
   }
 });
 
