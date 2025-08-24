@@ -7,8 +7,6 @@ import {
   Play,
   Square,
   Activity,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import SessionControls from "./SessionControls";
@@ -60,33 +58,6 @@ const LiveAssistantView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            {isConnected ? (
-              <>
-                <Wifi className="text-green-500" size={16} />
-                <span className="text-sm text-green-600 font-medium">
-                  Connected
-                </span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="text-secondary-400" size={16} />
-                <span className="text-sm text-secondary-500">
-                  Disconnected
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="mt-2">
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-secondary-500">
-              {realtimeEvents.length} events logged
-            </div>
-            <div className="text-xs text-secondary-500 capitalize">
-              Status: {sessionState}
-            </div>
-          </div>
         </div>
       </div>
 

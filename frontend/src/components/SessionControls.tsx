@@ -32,7 +32,7 @@ const SessionStopped: React.FC<SessionStoppedProps> = ({ startSession }) => {
         `}
       >
         <Phone size={18} />
-        <span>{isActivating && selectedLender === 'lenderA' ? 'Calling...' : 'Call Lender A'}</span>
+        <span>{isActivating && selectedLender === 'lenderA' ? 'Calling...' : 'Start Live Assistant and Call Lender A'}</span>
       </button>
 
       <button
@@ -47,7 +47,7 @@ const SessionStopped: React.FC<SessionStoppedProps> = ({ startSession }) => {
         `}
       >
         <Phone size={18} />
-        <span>{isActivating && selectedLender === 'lenderB' ? 'Calling...' : 'Call Lender B'}</span>
+        <span>{isActivating && selectedLender === 'lenderB' ? 'Calling...' : 'Start Live Assistant and Call Lender B'}</span>
       </button>
     </div>
   );
