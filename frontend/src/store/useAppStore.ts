@@ -45,6 +45,8 @@ interface AppStore extends AppState {
   setClaudeAnalysis: (analysis: Partial<ClaudeAnalysis>) => void;
   setAnalyzing: (isAnalyzing: boolean) => void;
   clearAnalysis: () => void;
+  // Lender Actions
+  setCurrentLender: (lender: "lenderA" | "lenderB" | null) => void;
   reset: () => void;
 }
 
@@ -80,6 +82,7 @@ const initialState: AppState = {
   sessionState: "idle",
   webrtcConnection: initialWebRTCConnection,
   claudeAnalysis: initialClaudeAnalysis,
+  currentLender: null,
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -193,6 +196,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
     })),
 
   clearAnalysis: () => set({ claudeAnalysis: initialClaudeAnalysis }),
+
+  // Lender Actions
+  setCurrentLender: (currentLender) => set({ currentLender }),
 
   reset: () => set(initialState),
 }));

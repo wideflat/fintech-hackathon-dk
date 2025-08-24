@@ -114,4 +114,6 @@ export interface AppState {
   webrtcConnection: WebRTCConnection;
   // Claude Analysis State
   claudeAnalysis: ClaudeAnalysis;
+  // Current Lender State
+  currentLender: "lenderA" | "lenderB" | null;
 }

@@ -22,7 +22,7 @@ class ClaudeAnalyzer {
     }
   }
 
-  async analyzeNegotiationOpportunities(sessionId) {
+  async analyzeNegotiationOpportunities(sessionId, lenderContext = null) {
     try {
       this.initializeClient();
       
@@ -32,13 +32,13 @@ class ClaudeAnalyzer {
         return { success: false, error: 'No conversation found' };
       }
 
-      const cacheKey = `${sessionId}-${messages.length}`;
+      const cacheKey = `${sessionId}-${messages.length}-${lenderContext?.currentLender || 'unknown'}`;
       const cached = this.getCachedAnalysis(cacheKey);
       if (cached) {
         return { success: true, analysis: cached, cached: true };
       }
 
-      const prompt = this.buildNegotiationPrompt(messages);
+      const prompt = this.buildNegotiationPrompt(messages, lenderContext);
       const response = await this.client.messages.create({
         model: 'claude-3-haiku-20240307',
         max_tokens: 1500,
@@ -79,12 +79,34 @@ class ClaudeAnalyzer {
     });
   }
 
-  buildNegotiationPrompt(messages) {
+  buildNegotiationPrompt(messages, lenderContext = null) {
     const conversationText = messages.slice(-20).map(m => 
       `${m.role === 'user' ? 'CUSTOMER' : 'LOAN OFFICER'}: ${m.content}`
     ).join('\n');
 
-    return `You are a loan negotiation expert coaching a customer in real-time. Based on what the loan officer just said, tell the customer exactly what to say next.
+    // Build lender-specific context
+    let lenderInfo = '';
+    let competitorInfo = '';
+    
+    if (lenderContext && lenderContext.currentLender && lenderContext.lenderData) {
+      const current = lenderContext.lenderData[lenderContext.currentLender];
+      const competitor = lenderContext.currentLender === 'lenderA' 
+        ? lenderContext.lenderData.lenderB 
+        : lenderContext.lenderData.lenderA;
+        
+      lenderInfo = `
+CURRENT CALL CONTEXT:
+- You're speaking with Mike from ${current.name}
+- Current offer: ${current.rate} interest rate${current.hasPoints ? ` with ${current.points}` : ' with no points'}
+- Loan amount: $500,000 (30-year fixed)`;
+
+      competitorInfo = `
+COMPETING OFFER TO LEVERAGE:
+- ${competitor.name}: ${competitor.rate} interest rate${competitor.hasPoints ? ` with ${competitor.points}` : ' with no points'}`;
+    }
+
+    return `You are a loan negotiation expert coaching a customer in real-time. Based on what Mike the loan officer just said, tell the customer exactly what to say next to get the best deal.
+${lenderInfo}${competitorInfo}
 
 CONVERSATION:
 ${conversationText}
@@ -92,7 +114,7 @@ ${conversationText}
 Provide the customer's next response in this exact JSON format:
 {
   "negotiationPotential": "Low|Medium|High",
-  "mainRecommendation": "The exact words or question the customer should say next to the loan officer",
+  "mainRecommendation": "The exact words or question the customer should say next to Mike",
   "quickTip": "Brief coaching tip on tone or strategy (optional)"
 }
 
@@ -100,10 +122,11 @@ Focus on the BEST response to leverage:
 1. Interest rate negotiation opportunities  
 2. Fee reduction or waiver requests
 3. Better terms or conditions
-4. Competitive offers as leverage
+4. Competitive offers as leverage (mention the competing lender's offer when strategic)
 5. Customer's strengths (credit score, relationship, etc.)
+6. Points vs no-points trade-offs
 
-Make the mainRecommendation conversational, confident, and under 40 words. Write it as if the customer is speaking directly to the loan officer.`;
+Make the mainRecommendation conversational, confident, and under 40 words. Write it as if the customer is speaking directly to Mike.`;
   }
 
   parseAnalysisResponse(responseText) {

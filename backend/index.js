@@ -87,6 +87,7 @@ function extractConversationText(event) {
 // Terminal conversation display and storage
 let conversationBuffer = '';
 let currentSessionId = null;
+let currentLenderContext = null;
 
 // Analysis trigger configuration
 const TRIGGER_KEYWORDS = ['rate', 'interest rate', 'apr', 'fee', 'application fee', 'origination fee', 'negotiate', 'better deal', 'discount', 'refinance', 'lower payment', 'credit score', 'qualification'];
@@ -115,7 +116,7 @@ async function analyzeAndBroadcast(sessionId, triggerReason) {
   io.emit('analysis-started', { sessionId });
   
   try {
-    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(sessionId);
+    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(sessionId, currentLenderContext);
     if (result.success) {
       io.emit('analysis-update', {
         sessionId,
@@ -400,6 +401,23 @@ app.get('/api/analysis/:sessionId/latest', async (req, res) => {
   }
 });
 
+// Set lender context for analysis
+app.post('/api/set-lender-context', (req, res) => {
+  try {
+    const { lender, lenderData } = req.body;
+    
+    currentLenderContext = {
+      currentLender: lender,
+      lenderData: lenderData
+    };
+    
+    console.log(`🏦 Set lender context: ${lender}`);
+    res.json({ success: true, lender: lender });
+  } catch (error) {
+    console.error('Set lender context error:', error);
+    res.status(500).json({ error: 'Failed to set lender context' });
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
