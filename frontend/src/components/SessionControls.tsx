@@ -30,7 +30,7 @@ const SessionStopped: React.FC<SessionStoppedProps> = ({ startSession }) => {
         `}
       >
         <Zap size={18} />
-        <span>{isActivating ? 'starting session...' : 'start session'}</span>
+        <span>{isActivating ? 'Starting Live Assistant...' : 'Start Live Assistant'}</span>
       </button>
     </div>
   );
