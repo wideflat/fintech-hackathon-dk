@@ -33,6 +33,14 @@ const ComparisonView: React.FC = () => {
             "Lender A has a slightly higher rate but lower fees make it more cost-effective.",
           pointsComparison: "Both lenders offer similar points structure.",
           feesComparison: "Lender A has $2,150 less in total closing costs.",
+          overallValue:
+            "Based on weighted analysis: Interest Rate (40%), Points (30%), Closing Costs (30%)",
+        },
+        analysis: {
+          lenderAScore: 75,
+          lenderBScore: 25,
+          criteria: ["Interest Rate", "Points", "Closing Costs"],
+          weights: [40, 30, 30],
         },
       };
 

@@ -28,6 +28,13 @@ export interface ComparisonResult {
     interestRateComparison: string;
     pointsComparison: string;
     feesComparison: string;
+    overallValue: string;
+  };
+  analysis: {
+    lenderAScore: number;
+    lenderBScore: number;
+    criteria: string[];
+    weights: number[];
   };
 }
 
