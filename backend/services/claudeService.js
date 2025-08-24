@@ -6,7 +6,7 @@ class ClaudeService {
     this.anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
-    this.model = process.env.CLAUDE_MODEL || "claude-3-sonnet-20240229";
+    this.model = process.env.CLAUDE_MODEL || "claude-3-5-sonnet-20241022";
   }
 
   /**
@@ -42,6 +42,43 @@ class ClaudeService {
       };
     } catch (error) {
       logger.error("Error in loan comparison:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Get actionable negotiation suggestions for loan comparison
+   */
+  async getActionableSuggestions(loanA, loanB) {
+    try {
+      const prompt = this.buildActionableSuggestionsPrompt(loanA, loanB);
+
+      const response = await this.anthropic.messages.create({
+        model: this.model,
+        max_tokens: 1000,
+        temperature: 0.2,
+        system:
+          "You are a mortgage negotiation expert. Provide specific, actionable advice that borrowers can use immediately to improve their loan terms. Focus on concrete questions to ask lenders and specific concessions to request.",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      });
+
+      const suggestions = this.parseActionableSuggestionsResponse(response.content[0].text);
+
+      return {
+        success: true,
+        suggestions: suggestions,
+        rawResponse: response.content[0].text,
+      };
+    } catch (error) {
+      logger.error("Error generating actionable suggestions:", error);
       return {
         success: false,
         error: error.message,
@@ -139,6 +176,34 @@ Please provide your analysis in the following JSON format:
   }
 
   /**
+   * Build prompt for actionable suggestions
+   */
+  buildActionableSuggestionsPrompt(loanA, loanB) {
+    return `
+Analyze these two loan estimates and provide specific, actionable negotiation steps:
+
+LOAN A (${loanA.lenderName}):
+- Interest Rate: ${loanA.interestRate}%
+- Points: ${loanA.points}
+- Total Closing Costs: $${loanA.totalClosingCosts}
+- Monthly Payment: $${loanA.monthlyPayment}
+
+LOAN B (${loanB.lenderName}):
+- Interest Rate: ${loanB.interestRate}%  
+- Points: ${loanB.points}
+- Total Closing Costs: $${loanB.totalClosingCosts}
+- Monthly Payment: $${loanB.monthlyPayment}
+
+Provide 3-5 specific actions the borrower should take to improve their position. Format as a simple bulleted list of actionable suggestions, such as:
+• Ask [Lender Name] if they can match [specific rate/term]
+• Request [Lender Name] to waive or reduce [specific fee/cost]
+• Use [competing offer detail] as leverage with [Lender Name]
+
+Focus on concrete questions to ask and specific concessions to request based on the differences between these offers.
+`;
+  }
+
+  /**
    * Build prompt for real-time negotiation advice
    */
   buildNegotiationPrompt(transcript, context) {
@@ -203,6 +268,33 @@ Provide your advice in the following JSON format:
         keyDifferences: [],
         negotiationTips: [],
       };
+    }
+  }
+
+  /**
+   * Parse actionable suggestions response into structured format
+   */
+  parseActionableSuggestionsResponse(response) {
+    try {
+      // Parse bullet points from the response
+      const lines = response.split('\n').filter(line => line.trim());
+      const suggestions = [];
+      
+      for (const line of lines) {
+        const trimmed = line.trim();
+        // Look for bullet points (•, -, *, 1., etc.)
+        if (trimmed.match(/^[•\-\*]|\d+\./) && trimmed.length > 10) {
+          const cleanSuggestion = trimmed.replace(/^[•\-\*]|\d+\.\s*/, '').trim();
+          if (cleanSuggestion) {
+            suggestions.push(cleanSuggestion);
+          }
+        }
+      }
+      
+      return suggestions;
+    } catch (error) {
+      logger.error("Error parsing actionable suggestions response:", error);
+      return [];
     }
   }
 

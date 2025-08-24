@@ -42,6 +42,7 @@ export interface ComparisonResult {
     criteria: string[];
     weights: number[];
   };
+  actionableSuggestions?: string[];
 }
 
 export interface ChatMessage {
