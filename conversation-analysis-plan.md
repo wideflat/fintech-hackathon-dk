@@ -207,3 +207,54 @@ const analyzeNegotiationOpportunities = async (messages) => {
 5. **Scalable Architecture** - Easy to add more analysis types later
 
 This approach provides immediate value by helping customers identify and act on negotiation opportunities during loan conversations.
+
+## Detailed Implementation Steps
+
+### Step 1: Create Conversation Storage Service
+**File:** `/backend/services/conversationStore.js`
+- Implement in-memory conversation buffer with sliding window
+- Track active sessions and message history
+- Provide methods to add messages and retrieve conversation context
+- Handle session lifecycle (start, update, end)
+
+### Step 2: Develop Claude Analyzer Service  
+**File:** `/backend/services/claudeAnalyzer.js`
+- Integrate with Claude API for negotiation analysis
+- Implement analysis prompt templates
+- Handle API rate limiting and error handling
+- Cache analysis results to avoid duplicate calls
+
+### Step 3: Update Backend Main Server
+**File:** `/backend/index.js`
+- Integrate conversation store with existing voice logging
+- Add analysis trigger logic (keyword detection, message count)
+- Create API endpoints for manual analysis requests
+- Implement real-time analysis broadcasting
+
+### Step 4: Create Frontend Analysis Display
+**File:** `/frontend/src/components/NegotiationInsights.tsx`
+- Design UI components for showing negotiation opportunities
+- Display analysis results in real-time
+- Add visual indicators for leverage points
+- Show actionable recommendations
+
+### Step 5: Connect Frontend to Backend Analysis
+**File:** `/frontend/src/services/analysisService.ts`
+- Create service for requesting analysis from backend
+- Handle real-time updates via WebSocket/polling
+- Manage analysis state in frontend store
+- Integrate with existing WebRTC event flow
+
+### Step 6: Add Analysis Triggers and Optimization
+- Implement smart triggering based on conversation context
+- Add debouncing to prevent excessive API calls
+- Optimize conversation context sent to Claude API
+- Add error handling and fallback mechanisms
+
+### Step 7: Testing and Performance Monitoring
+- Test with various conversation scenarios
+- Monitor Claude API usage and costs
+- Implement logging for analysis performance
+- Add configuration for analysis frequency and triggers
+
+This structured approach ensures a complete implementation from data capture to user-facing analysis results.
