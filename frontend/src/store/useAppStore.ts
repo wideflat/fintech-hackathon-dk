@@ -21,7 +21,7 @@ interface AppStore extends AppState {
     estimate: LoanEstimate
   ) => void;
   clearLoanEstimates: () => void;
-  setComparisonResult: (result: ComparisonResult) => void;
+  setComparisonResult: (result: ComparisonResult | null) => void;
   addChatMessage: (message: Omit<ChatMessage, "id" | "timestamp">) => void;
   addTranscriptionMessage: (
     message: Omit<TranscriptionMessage, "id" | "timestamp">
@@ -178,7 +178,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       },
     })),
 
-  clearWebRTCConnection: () => set({ webrtcConnection: initialWebRTCConnection }),
+  clearWebRTCConnection: () =>
+    set({ webrtcConnection: initialWebRTCConnection }),
 
   // Claude Analysis Actions
   setClaudeAnalysis: (analysis) =>
