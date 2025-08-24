@@ -30,6 +30,13 @@ const LandingPage: React.FC = () => {
                 <Brain className="w-4 h-4" />
                 AI-Powered Call Assistant
               </span>
+              
+              <div className="mb-4">
+                <h2 className="text-sm lg:text-base font-semibold tracking-wider text-gray-500 uppercase">
+                  Mortgage Closer
+                </h2>
+              </div>
+              
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Your Smart 
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> AI Companion</span>
