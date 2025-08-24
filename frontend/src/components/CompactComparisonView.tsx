@@ -1,101 +1,171 @@
-import React from "react";
-import {
-  TrendingUp,
-  DollarSign,
-  AlertTriangle,
-  CheckCircle,
-  Activity,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { TrendingUp, DollarSign, AlertTriangle } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import PDFViewer from "./PDFViewer";
 
+interface LoanData {
+  lenderName: string;
+  interestRate: number;
+  points: number;
+  pointsCost: number;
+  originationFee: number;
+  applicationFee: number;
+  processingFee: number;
+  underwritingFee: number;
+  appraisalFee: number;
+  titleInsurance: number;
+  escrowDeposit: number;
+  otherFees: number;
+  totalClosingCosts: number;
+  monthlyPayment: number;
+  loanAmount: number;
+  term: number;
+}
+
 const CompactComparisonView: React.FC = () => {
-  const { 
-    loanEstimates, 
-    comparisonResult, 
-    setLoading, 
+  const {
+    loanEstimates,
+    comparisonResult,
+    setLoading,
     setComparisonResult,
     addRealtimeEvent,
-    clearRealtimeEvents
+    clearRealtimeEvents,
   } = useAppStore();
 
-  const handlePDFUpload = (file: File, lender: "lenderA" | "lenderB") => {
-    // Use real data from your loan comparison summary
-    const realData = {
-      lenderName: lender === "lenderA" ? "Bank A" : "Bank B",
-      interestRate: lender === "lenderA" ? 4.875 : 4.75,
-      points: lender === "lenderA" ? 0 : 1,
-      pointsCost: lender === "lenderA" ? 0 : 4000,
-      originationFee: lender === "lenderA" ? 1500 : 2000,
-      applicationFee: lender === "lenderA" ? 500 : 400,
-      processingFee: lender === "lenderA" ? 500 : 400,
-      underwritingFee: lender === "lenderA" ? 300 : 250,
-      appraisalFee: lender === "lenderA" ? 500 : 500,
-      titleInsurance: lender === "lenderA" ? 1200 : 1500,
-      escrowDeposit: lender === "lenderA" ? 2400 : 2400,
-      otherFees: lender === "lenderA" ? 500 : 650,
-      totalClosingCosts: lender === "lenderA" ? 7500 : 9200,
-      monthlyPayment: lender === "lenderA" ? 2647 : 2602,
-      loanAmount: 500000,
-      term: 30,
+  const [realLoanData, setRealLoanData] = useState<{
+    lenderA: LoanData | null;
+    lenderB: LoanData | null;
+  }>({
+    lenderA: null,
+    lenderB: null,
+  });
+
+  // Load real loan data from JSON file
+  useEffect(() => {
+    const loadLoanData = async () => {
+      try {
+        const response = await fetch("/loan_comparison_summary.json");
+        const data = await response.json();
+        const summary = data.loan_comparison_summary;
+
+        // Convert the extracted data to LoanData format
+        const lenderAData: LoanData = {
+          lenderName: "Bank A",
+          interestRate: parseFloat(
+            summary.lenders.lender_a.interest_rate.replace("%", "")
+          ),
+          points: parseFloat(summary.lenders.lender_a.points.replace("%", "")),
+          pointsCost: summary.lenders.lender_a.loan_amount_points,
+          originationFee: 1500, // Estimated based on typical loan costs
+          applicationFee: 500,
+          processingFee: 500,
+          underwritingFee: 300,
+          appraisalFee: 500,
+          titleInsurance: 1200,
+          escrowDeposit: 2400,
+          otherFees: 500,
+          totalClosingCosts: parseInt(
+            summary.lenders.lender_a.total_closing_costs
+              .replace("$", "")
+              .replace(",", "")
+          ),
+          monthlyPayment: 2647, // Based on loan calculation for 4.875% rate
+          loanAmount: summary.lenders.lender_a.loan_amount,
+          term: 30,
+        };
+
+        const lenderBData: LoanData = {
+          lenderName: "Bank B",
+          interestRate: parseFloat(
+            summary.lenders.lender_b.interest_rate.replace("%", "")
+          ),
+          points: parseFloat(summary.lenders.lender_b.points.replace("%", "")),
+          pointsCost: summary.lenders.lender_b.loan_amount_points,
+          originationFee: 2000,
+          applicationFee: 400,
+          processingFee: 400,
+          underwritingFee: 250,
+          appraisalFee: 500,
+          titleInsurance: 1500,
+          escrowDeposit: 2400,
+          otherFees: 650,
+          totalClosingCosts: parseInt(
+            summary.lenders.lender_b.total_closing_costs
+              .replace("$", "")
+              .replace(",", "")
+          ),
+          monthlyPayment: 2602, // Based on loan calculation for 4.75% rate
+          loanAmount: summary.lenders.lender_b.loan_amount,
+          term: 30,
+        };
+
+        setRealLoanData({
+          lenderA: lenderAData,
+          lenderB: lenderBData,
+        });
+      } catch (error) {
+        console.error("Failed to load loan data:", error);
+      }
     };
 
-    // Update store with real extracted data
-    console.log(`Extracted real data from ${file.name}:`, realData);
+    loadLoanData();
+  }, []);
 
-    // This would normally update the store with the extracted data
-    // For now, we'll use the data directly in the comparison
+  const handlePDFUpload = (file: File, lender: "lenderA" | "lenderB") => {
+    // In a full implementation, this would extract data from the uploaded PDF
+    // For now, we're using pre-extracted data from the JSON file
+    console.log(`PDF uploaded for ${lender}: ${file.name}`);
   };
 
   const handleCompare = async () => {
-    if (!loanEstimates.lenderA || !loanEstimates.lenderB) {
+    console.log("Generate Summary button clicked!");
+    console.log("Real loan data:", realLoanData);
+
+    if (!realLoanData.lenderA || !realLoanData.lenderB) {
+      console.log("Real loan data not loaded yet");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Simulate AI analysis time
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Call backend for real PDF analysis
+      const response = await fetch(
+        "http://localhost:3001/api/pdf-analysis/compare",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      // Use real data from your loan comparison summary (from data/loan_comparison_summary.json)
-      const lenderA = {
-        lenderName: "Bank A",
-        interestRate: 4.875,
-        points: 0,
-        pointsCost: 0,
-        originationFee: 1500,
-        applicationFee: 500,
-        processingFee: 500,
-        underwritingFee: 300,
-        appraisalFee: 500,
-        titleInsurance: 1200,
-        escrowDeposit: 2400,
-        otherFees: 500,
-        totalClosingCosts: 7500,
-        monthlyPayment: 2647,
-        loanAmount: 500000,
-        term: 30,
-      };
+      if (!response.ok) {
+        throw new Error("Backend analysis failed");
+      }
 
-      const lenderB = {
-        lenderName: "Bank B",
-        interestRate: 4.75,
-        points: 1,
-        pointsCost: 4000,
-        originationFee: 2000,
-        applicationFee: 400,
-        processingFee: 400,
-        underwritingFee: 250,
-        appraisalFee: 500,
-        titleInsurance: 1500,
-        escrowDeposit: 2400,
-        otherFees: 650,
-        totalClosingCosts: 9200,
-        monthlyPayment: 2602,
-        loanAmount: 500000,
-        term: 30,
-      };
+      const backendResult = await response.json();
+
+      if (backendResult.success) {
+        setComparisonResult(backendResult.data);
+        return;
+      } else {
+        throw new Error(backendResult.error);
+      }
+    } catch (backendError) {
+      console.warn(
+        "Backend analysis failed, falling back to frontend analysis:",
+        backendError
+      );
+
+      // Fallback to frontend analysis using loaded data
+      const lenderA = realLoanData.lenderA;
+      const lenderB = realLoanData.lenderB;
+
+      if (!lenderA || !lenderB) {
+        console.error("No loan data available for analysis");
+        return;
+      }
 
       // AI Analysis based on the criteria from your data files
       let recommendation: "lenderA" | "lenderB";
@@ -107,6 +177,12 @@ const CompactComparisonView: React.FC = () => {
         pointsComparison: "",
         feesComparison: "",
         overallValue: "",
+        interestRateA: lenderA.interestRate,
+        interestRateB: lenderB.interestRate,
+        pointsA: lenderA.points,
+        pointsB: lenderB.points,
+        feesA: lenderA.totalClosingCosts,
+        feesB: lenderB.totalClosingCosts,
       };
 
       // Compare Interest Rates
@@ -216,120 +292,16 @@ const CompactComparisonView: React.FC = () => {
       };
 
       setComparisonResult(aiResult);
-    } catch (error) {
-      console.error("AI Analysis failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Always allow comparison since we're using real data from the PDFs
-  const canCompare = true;
+  // Allow comparison when real data is loaded
+  const canCompare = realLoanData.lenderA && realLoanData.lenderB;
 
-  // Mock event generation for testing EventLog
-  const generateMockEvents = () => {
-    clearRealtimeEvents();
-    
-    const mockEvents = [
-      {
-        event_id: "event_001",
-        type: "session.created",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { session_id: "sess_abc123", model: "gpt-4o-realtime-preview" }
-      },
-      {
-        event_id: "client_002",
-        type: "session.update",
-        timestamp: new Date().toISOString(),
-        isClient: true,
-        data: { turn_detection: { type: "server_vad" } }
-      },
-      {
-        event_id: "event_003",
-        type: "conversation.created",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { conversation: { id: "conv_abc123" } }
-      },
-      {
-        event_id: "client_004",
-        type: "input_audio_buffer.append",
-        timestamp: new Date().toISOString(),
-        isClient: true,
-        data: { audio: "[audio data]" }
-      },
-      {
-        event_id: "event_005",
-        type: "input_audio_buffer.speech_started",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { audio_start_ms: 1000 }
-      },
-      {
-        event_id: "event_006",
-        type: "conversation.item.created",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { 
-          item: { 
-            id: "item_001", 
-            type: "message", 
-            role: "user",
-            content: [{ type: "input_text", text: "Hello, I need help with my loan comparison." }]
-          } 
-        }
-      },
-      {
-        event_id: "event_007",
-        type: "response.created",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { response: { id: "resp_001", status: "in_progress" } }
-      },
-      {
-        event_id: "event_008",
-        type: "response.output_item.added",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { 
-          item: {
-            id: "item_002",
-            type: "message", 
-            role: "assistant",
-            content: [{ type: "text", text: "I'd be happy to help you compare your loan estimates..." }]
-          }
-        }
-      },
-      {
-        event_id: "event_009",
-        type: "response.audio.delta",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { delta: "[audio_delta_data]" }
-      },
-      {
-        event_id: "event_010", 
-        type: "response.done",
-        timestamp: new Date().toISOString(),
-        isClient: false,
-        data: { response: { id: "resp_001", status: "completed" } }
-      }
-    ];
-
-    // Add events with delays to simulate real-time flow
-    mockEvents.forEach((event, index) => {
-      setTimeout(() => {
-        addRealtimeEvent(event);
-      }, index * 500);
-    });
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(value);
+  const clearResults = () => {
+    setComparisonResult(null);
   };
 
   return (
@@ -372,7 +344,7 @@ const CompactComparisonView: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-secondary-900 flex items-center space-x-2">
                 <TrendingUp className="text-primary-600" size={20} />
-                <span>AI Recommendations</span>
+                <span>Loan Comparison Summary</span>
               </h3>
 
               {canCompare && !comparisonResult && (
@@ -382,7 +354,16 @@ const CompactComparisonView: React.FC = () => {
                   disabled={false}
                 >
                   <TrendingUp size={20} />
-                  <span>Get Recommendation</span>
+                  <span>Generate Summary</span>
+                </button>
+              )}
+              {canCompare && comparisonResult && (
+                <button
+                  onClick={clearResults}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  <AlertTriangle size={20} />
+                  <span>Clear Summary</span>
                 </button>
               )}
             </div>
@@ -399,93 +380,78 @@ const CompactComparisonView: React.FC = () => {
               </div>
             ) : comparisonResult ? (
               <div className="space-y-4">
-                {/* Recommendation Header */}
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle className="text-green-600" size={20} />
-                    <span className="font-semibold text-green-800">
-                      {comparisonResult.recommendation === "lenderA"
-                        ? "Bank A"
-                        : comparisonResult.recommendation === "lenderB"
-                        ? "Bank B"
-                        : "Similar Options"}{" "}
-                      Recommended
-                    </span>
-                  </div>
-                  <p className="text-sm text-green-700">
-                    {comparisonResult.reasoning}
-                  </p>
+                {/* Simple Comparison Table */}
+                <div className="bg-white border border-secondary-200 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-secondary-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-secondary-700 border-r border-secondary-200">
+                          Criteria
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-secondary-700 border-r border-secondary-200">
+                          Bank A
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-medium text-secondary-700">
+                          Bank B
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-secondary-200">
+                      <tr>
+                        <td className="px-4 py-3 text-sm font-medium text-secondary-900 border-r border-secondary-200">
+                          Interest
+                        </td>
+                        <td className="px-4 py-3 text-center text-sm text-secondary-900 border-r border-secondary-200">
+                          {comparisonResult.breakdown.interestRateA}%
+                        </td>
+                        <td className="px-4 py-3 text-center text-sm text-secondary-900">
+                          {comparisonResult.breakdown.interestRateB}%
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 text-sm font-medium text-secondary-900 border-r border-secondary-200">
+                          Points
+                        </td>
+                        <td className="px-4 py-3 text-center text-sm text-secondary-900 border-r border-secondary-200">
+                          {comparisonResult.breakdown.pointsA} point(s)
+                        </td>
+                        <td className="px-4 py-3 text-center text-sm text-secondary-900">
+                          {comparisonResult.breakdown.pointsB} point(s)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 text-sm font-medium text-secondary-900 border-r border-secondary-200">
+                          Fees
+                        </td>
+                        <td className="px-4 py-3 text-center text-sm text-secondary-900 border-r border-secondary-200">
+                          ${comparisonResult.breakdown.feesA.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-center text-sm text-secondary-900">
+                          ${comparisonResult.breakdown.feesB.toLocaleString()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
-                {/* AI Analysis Scores */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <div className="text-center mb-2">
-                      <div className="text-lg font-bold text-blue-700">
-                        {comparisonResult.analysis.lenderAScore}%
-                      </div>
-                      <div className="text-xs text-blue-600">Bank A Score</div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-purple-50 rounded-lg">
-                    <div className="text-center mb-2">
-                      <div className="text-lg font-bold text-purple-700">
-                        {comparisonResult.analysis.lenderBScore}%
-                      </div>
-                      <div className="text-xs text-purple-600">
-                        Bank B Score
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Savings Summary */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-xl font-bold text-blue-700">
-                      {formatCurrency(comparisonResult.savings.monthly)}
-                    </div>
-                    <div className="text-xs text-blue-600">Monthly Savings</div>
-                  </div>
-
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-xl font-bold text-green-700">
-                      {formatCurrency(comparisonResult.savings.total)}
-                    </div>
-                    <div className="text-xs text-green-600">
-                      Total Savings (30yr)
-                    </div>
-                  </div>
-                </div>
-
-                {/* Detailed Breakdown */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-secondary-900">
-                    Analysis Breakdown:
+                {/* Summary Notes */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">
+                    Summary Notes:
                   </h4>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-secondary-600">Interest Rate:</span>
-                      <span className="text-secondary-900">
-                        {comparisonResult.breakdown.interestRateComparison}
-                      </span>
+                  <div className="text-sm text-blue-700 space-y-1">
+                    <div>
+                      • Interest Rate Difference:{" "}
+                      {comparisonResult.breakdown.interestRateComparison}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-secondary-600">Points:</span>
-                      <span className="text-secondary-900">
-                        {comparisonResult.breakdown.pointsComparison}
-                      </span>
+                    <div>
+                      • Points Difference:{" "}
+                      {comparisonResult.breakdown.pointsComparison}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-secondary-600">Closing Costs:</span>
-                      <span className="text-secondary-900">
-                        {comparisonResult.breakdown.feesComparison}
-                      </span>
+                    <div>
+                      • Fees Difference:{" "}
+                      {comparisonResult.breakdown.feesComparison}
                     </div>
-                  </div>
-                  <div className="text-xs text-secondary-500 mt-2">
-                    {comparisonResult.breakdown.overallValue}
                   </div>
                 </div>
               </div>
@@ -505,7 +471,7 @@ const CompactComparisonView: React.FC = () => {
                       size={48}
                     />
                     <p className="text-secondary-600">
-                      Click "Get Recommendation" to analyze both PDFs
+                      Click "Generate Summary" to examine both PDFs
                     </p>
                   </>
                 )}

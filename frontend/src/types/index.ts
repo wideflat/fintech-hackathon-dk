@@ -29,6 +29,12 @@ export interface ComparisonResult {
     pointsComparison: string;
     feesComparison: string;
     overallValue: string;
+    interestRateA: number;
+    interestRateB: number;
+    pointsA: number;
+    pointsB: number;
+    feesA: number;
+    feesB: number;
   };
   analysis: {
     lenderAScore: number;
@@ -69,7 +75,12 @@ export interface RealtimeEvent {
   data?: any;
 }
 
-export type SessionState = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnecting';
+export type SessionState =
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "error"
+  | "disconnecting";
 
 export interface WebRTCConnection {
   peerConnection: RTCPeerConnection | null;
