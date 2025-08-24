@@ -248,7 +248,7 @@ ${lender === 'lenderA' ?
   'Your advantage: Lower rate of 4.750%, better long-term savings despite the points'}
 
 Remember: You've already built rapport with this customer. This is a follow-up call, not a cold call. You want to close this deal.`,
-            voice: 'alloy',
+            voice: lender === 'lenderA' ? 'alloy' : 'echo',
             turn_detection: {
               type: 'server_vad',
               threshold: 0.5,
