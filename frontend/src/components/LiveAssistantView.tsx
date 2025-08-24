@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Mic,
   MicOff,
@@ -7,23 +7,39 @@ import {
   Play,
   Square,
   Activity,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import SessionControls from "./SessionControls";
-import EventLog from "./EventLog";
 import NegotiationSuggestions from "./NegotiationSuggestions";
+import { analysisService } from "../services/analysisService";
 
 const LiveAssistantView: React.FC = () => {
   const {
     realtimeEvents,
     sessionState,
+    currentLender,
     addNegotiationSuggestion,
+    clearAnalysis,
   } = useAppStore();
 
   // Connection status based on actual session state
   const isConnected = sessionState === 'connected';
+
+  // Initialize analysis service on component mount
+  useEffect(() => {
+    analysisService.connect();
+    
+    return () => {
+      analysisService.disconnect();
+    };
+  }, []);
+
+  // Clear analysis when session state changes
+  useEffect(() => {
+    if (sessionState === 'idle' || sessionState === 'error') {
+      clearAnalysis();
+    }
+  }, [sessionState, clearAnalysis]);
 
   return (
     <div className="flex-1 flex flex-col h-screen">
@@ -42,40 +58,35 @@ const LiveAssistantView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            {isConnected ? (
-              <>
-                <Wifi className="text-green-500" size={16} />
-                <span className="text-sm text-green-600 font-medium">
-                  Connected
-                </span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="text-secondary-400" size={16} />
-                <span className="text-sm text-secondary-500">
-                  Disconnected
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-        <div className="mt-2">
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-secondary-500">
-              {realtimeEvents.length} events logged
-            </div>
-            <div className="text-xs text-secondary-500 capitalize">
-              Status: {sessionState}
-            </div>
-          </div>
         </div>
       </div>
 
+      {/* Loan Terms Panel - Show when a lender is selected */}
+      {currentLender && (
+        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-lg font-semibold text-blue-900">
+                {currentLender === 'lenderA' ? 'Discussing Loan Estimate from Lender A:' : 'Discussing Loan Estimate from Lender B:'}
+              </div>
+              <div className="text-base font-medium text-blue-700 mt-2">
+                {currentLender === 'lenderA' 
+                  ? '$500,000 @ 4.875% with no points - First National Bank'
+                  : '$500,000 @ 4.750% with 1% points ($4,000) - Premier Lending'
+                }
+              </div>
+            </div>
+            <div className="text-sm font-medium text-blue-600">
+              {currentLender === 'lenderA' ? 'Sarah' : 'Mike'} is following up on yesterday's estimate
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Session Status & Metrics */}
-        <div className="w-full lg:w-80 bg-white border-r border-secondary-200 overflow-auto">
+        <div className="w-80 bg-white border-r border-secondary-200 overflow-auto shrink-0">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
               <MessageSquare className="text-primary-600" size={20} />
@@ -163,22 +174,28 @@ const LiveAssistantView: React.FC = () => {
           </div>
         </div>
 
-        {/* Center Panel - Event Log */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-hidden p-6">
-            <EventLog events={realtimeEvents} />
-          </div>
-        </div>
+        {/* Main Panel - Negotiation Suggestions */}
+        <div className="flex-1 bg-secondary-50 overflow-auto">
+          <div className="p-6 flex gap-6">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
+                <Lightbulb className="text-primary-600" size={20} />
+                <span>AI Suggestions</span>
+              </h3>
 
-        {/* Right Panel - Negotiation Suggestions */}
-        <div className="w-full lg:w-96 bg-secondary-50 border-l border-secondary-200 overflow-auto">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
-              <Lightbulb className="text-primary-600" size={20} />
-              <span>AI Suggestions</span>
-            </h3>
+              <NegotiationSuggestions />
+            </div>
 
-            <NegotiationSuggestions />
+            {/* Phone Photo - Only show when call is active */}
+            {isConnected && currentLender && (
+              <div className="w-64 flex-shrink-0">
+                <img 
+                  src={currentLender === 'lenderA' ? '/phone_with_lender_A.png' : '/phone_with_lender_B.png'}
+                  alt={`On call with ${currentLender === 'lenderA' ? 'Sarah' : 'Mike'}`}
+                  className="w-full h-auto rounded-lg shadow-lg"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

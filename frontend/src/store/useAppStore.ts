@@ -10,6 +10,7 @@ import {
   RealtimeEvent,
   SessionState,
   WebRTCConnection,
+  ClaudeAnalysis,
 } from "../types";
 
 interface AppStore extends AppState {
@@ -40,6 +41,14 @@ interface AppStore extends AppState {
   setSessionState: (state: SessionState) => void;
   setWebRTCConnection: (connection: Partial<WebRTCConnection>) => void;
   clearWebRTCConnection: () => void;
+  // Claude Analysis Actions
+  setClaudeAnalysis: (analysis: Partial<ClaudeAnalysis>) => void;
+  setAnalyzing: (isAnalyzing: boolean) => void;
+  clearAnalysis: () => void;
+  // Lender Actions
+  setCurrentLender: (lender: "lenderA" | "lenderB" | null) => void;
+  // Landing Page Actions
+  setShowLanding: (show: boolean) => void;
   reset: () => void;
 }
 
@@ -48,6 +57,14 @@ const initialWebRTCConnection: WebRTCConnection = {
   dataChannel: null,
   audioElement: null,
   localStream: null,
+};
+
+const initialClaudeAnalysis: ClaudeAnalysis = {
+  negotiationPotential: null,
+  mainRecommendation: null,
+  quickTip: null,
+  lastUpdated: null,
+  isAnalyzing: false,
 };
 
 const initialState: AppState = {
@@ -66,6 +83,9 @@ const initialState: AppState = {
   error: null,
   sessionState: "idle",
   webrtcConnection: initialWebRTCConnection,
+  claudeAnalysis: initialClaudeAnalysis,
+  currentLender: null,
+  showLanding: true,
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -160,6 +180,32 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   clearWebRTCConnection: () =>
     set({ webrtcConnection: initialWebRTCConnection }),
+
+  // Claude Analysis Actions
+  setClaudeAnalysis: (analysis) =>
+    set((state) => ({
+      claudeAnalysis: {
+        ...state.claudeAnalysis,
+        ...analysis,
+        lastUpdated: new Date(),
+      },
+    })),
+
+  setAnalyzing: (isAnalyzing) =>
+    set((state) => ({
+      claudeAnalysis: {
+        ...state.claudeAnalysis,
+        isAnalyzing,
+      },
+    })),
+
+  clearAnalysis: () => set({ claudeAnalysis: initialClaudeAnalysis }),
+
+  // Lender Actions
+  setCurrentLender: (currentLender) => set({ currentLender }),
+
+  // Landing Page Actions
+  setShowLanding: (showLanding) => set({ showLanding }),
 
   reset: () => set(initialState),
 }));

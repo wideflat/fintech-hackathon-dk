@@ -91,49 +91,13 @@ const ComparisonView: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div className="flex-1 flex overflow-hidden">
         {/* Forms Section */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-auto">
-          <div className="flex-1 p-6 overflow-auto">
-            <LoanEstimateForm lender="lenderA" />
-          </div>
-          <div className="flex-1 p-6 overflow-auto border-l border-secondary-200">
-            <LoanEstimateForm lender="lenderB" />
-          </div>
+        <div className="flex-1 p-6 overflow-auto">
+          <LoanEstimateForm lender="lenderA" />
         </div>
-
-        {/* Results Section */}
-        <div className="w-full lg:w-96 bg-secondary-50 border-l border-secondary-200 overflow-auto">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center space-x-2">
-              <DollarSign className="text-primary-600" size={20} />
-              <span>AI Analysis</span>
-            </h3>
-
-            {!canCompare ? (
-              <div className="text-center py-8">
-                <AlertCircle
-                  className="text-secondary-400 mx-auto mb-4"
-                  size={48}
-                />
-                <p className="text-secondary-600">
-                  Please complete both loan estimates to generate a comparison
-                </p>
-              </div>
-            ) : comparisonResult ? (
-              <ComparisonResult result={comparisonResult} />
-            ) : (
-              <div className="text-center py-8">
-                <TrendingUp
-                  className="text-secondary-400 mx-auto mb-4"
-                  size={48}
-                />
-                <p className="text-secondary-600">
-                  Click "Generate Analysis" to compare your loan estimates
-                </p>
-              </div>
-            )}
-          </div>
+        <div className="flex-1 p-6 overflow-auto border-l border-secondary-200">
+          <LoanEstimateForm lender="lenderB" />
         </div>
       </div>
     </div>

@@ -1,141 +1,107 @@
 import React from "react";
 import {
   Lightbulb,
-  AlertTriangle,
-  HelpCircle,
-  TrendingUp,
-  Clock,
+  Activity,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 
 const NegotiationSuggestions: React.FC = () => {
-  const { negotiationSuggestions } = useAppStore();
+  const { claudeAnalysis } = useAppStore();
 
-  const getSuggestionIcon = (type: string) => {
-    switch (type) {
-      case "suggestion":
-        return <Lightbulb className="text-blue-600" size={20} />;
-      case "clarification":
-        return <HelpCircle className="text-yellow-600" size={20} />;
-      case "warning":
-        return <AlertTriangle className="text-red-600" size={20} />;
-      case "opportunity":
-        return <TrendingUp className="text-green-600" size={20} />;
-      default:
-        return <Lightbulb className="text-blue-600" size={20} />;
-    }
-  };
 
-  const getSuggestionColor = (type: string) => {
-    switch (type) {
-      case "suggestion":
-        return "border-blue-200 bg-blue-50";
-      case "clarification":
-        return "border-yellow-200 bg-yellow-50";
-      case "warning":
-        return "border-red-200 bg-red-50";
-      case "opportunity":
-        return "border-green-200 bg-green-50";
-      default:
-        return "border-blue-200 bg-blue-50";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "low":
+  const getPotentialColor = (potential: string | null) => {
+    switch (potential) {
+      case "High":
         return "bg-green-100 text-green-800";
+      case "Medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "Low":
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-secondary-100 text-secondary-800";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  if (negotiationSuggestions.length === 0) {
+  // Show empty state if no recommendation and not analyzing
+  if (!claudeAnalysis.mainRecommendation && !claudeAnalysis.isAnalyzing) {
     return (
-      <div className="text-center py-8">
-        <Lightbulb className="text-secondary-400 mx-auto mb-4" size={48} />
-        <h4 className="text-lg font-medium text-secondary-900 mb-2">
-          No suggestions yet
-        </h4>
-        <p className="text-secondary-600">
-          Start recording to receive real-time negotiation advice
-        </p>
+      <div className="space-y-4">
+        {/* Negotiation Potential Score */}
+        <div className="p-4 bg-white rounded-lg border border-secondary-200">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-secondary-900">Negotiation Potential</span>
+            <span className={`px-3 py-1 rounded-full text-xs font-bold ${getPotentialColor(claudeAnalysis.negotiationPotential)}`}>
+              {claudeAnalysis.negotiationPotential || 'Not analyzed'}
+            </span>
+          </div>
+        </div>
+
+        <div className="text-center py-8">
+          <Lightbulb className="text-secondary-400 mx-auto mb-4" size={48} />
+          <h4 className="text-lg font-medium text-secondary-900 mb-2">
+            No response suggestions yet
+          </h4>
+          <p className="text-secondary-600">
+            Start talking with the loan officer to get real-time response suggestions
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {negotiationSuggestions.map((suggestion) => (
-        <div
-          key={suggestion.id}
-          className={`p-4 rounded-lg border ${getSuggestionColor(
-            suggestion.type
-          )}`}
-        >
+      {/* Negotiation Potential Score */}
+      <div className="p-4 bg-white rounded-lg border border-secondary-200">
+        <div className="flex justify-between items-center">
+          <span className="font-medium text-secondary-900">Negotiation Potential</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getPotentialColor(claudeAnalysis.negotiationPotential)}`}>
+            {claudeAnalysis.negotiationPotential || 'Not analyzed'}
+          </span>
+        </div>
+        
+        {claudeAnalysis.lastUpdated && (
+          <div className="text-xs text-secondary-500 mt-2">
+            Last analyzed: {claudeAnalysis.lastUpdated.toLocaleTimeString()}
+          </div>
+        )}
+      </div>
+
+      {/* Loading State */}
+      {claudeAnalysis.isAnalyzing && (
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center space-x-2">
+            <Activity size={16} className="animate-pulse text-blue-600" />
+            <span className="text-blue-800 font-medium">Analyzing conversation to suggest your response...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Your Response Suggestion */}
+      {claudeAnalysis.mainRecommendation && (
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
-              {getSuggestionIcon(suggestion.type)}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-secondary-900 capitalize">
-                    {suggestion.type}
-                  </span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-                      suggestion.priority
-                    )}`}
-                  >
-                    {suggestion.priority} priority
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-1 text-xs text-secondary-500">
-                  <Clock size={12} />
-                  <span>{formatTime(suggestion.timestamp)}</span>
-                </div>
+              <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                💬
               </div>
-
-              <p className="text-secondary-800 leading-relaxed">
-                {suggestion.text}
-              </p>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-medium text-blue-900 mb-2">Your Response</h4>
+              <div className="bg-white p-3 rounded border-l-4 border-blue-400 mb-3">
+                <p className="text-gray-800 text-base leading-relaxed italic">
+                  "{claudeAnalysis.mainRecommendation}"
+                </p>
+              </div>
+              {claudeAnalysis.quickTip && (
+                <div className="text-sm text-blue-700 bg-blue-100 p-2 rounded">
+                  <strong>💡 Tip:</strong> {claudeAnalysis.quickTip}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      ))}
-
-      {/* Quick Actions */}
-      <div className="mt-6 p-4 bg-white rounded-lg border border-secondary-200">
-        <h4 className="font-medium text-secondary-900 mb-3">Quick Actions</h4>
-        <div className="space-y-2">
-          <button className="w-full text-left p-2 rounded hover:bg-secondary-50 text-sm text-secondary-700">
-            • Ask about fee waivers
-          </button>
-          <button className="w-full text-left p-2 rounded hover:bg-secondary-50 text-sm text-secondary-700">
-            • Request rate lock extension
-          </button>
-          <button className="w-full text-left p-2 rounded hover:bg-secondary-50 text-sm text-secondary-700">
-            • Negotiate closing costs
-          </button>
-          <button className="w-full text-left p-2 rounded hover:bg-secondary-50 text-sm text-secondary-700">
-            • Ask for better terms
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

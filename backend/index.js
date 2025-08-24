@@ -91,6 +91,7 @@ function extractConversationText(event) {
 // Terminal conversation display and storage
 let conversationBuffer = '';
 let currentSessionId = null;
+let currentLenderContext = null;
 
 // Analysis trigger configuration
 const TRIGGER_KEYWORDS = ['rate', 'interest rate', 'apr', 'fee', 'application fee', 'origination fee', 'negotiate', 'better deal', 'discount', 'refinance', 'lower payment', 'credit score', 'qualification'];
@@ -119,7 +120,7 @@ async function analyzeAndBroadcast(sessionId, triggerReason) {
   io.emit('analysis-started', { sessionId });
   
   try {
-    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(sessionId);
+    const result = await claudeAnalyzer.analyzeNegotiationOpportunities(sessionId, currentLenderContext);
     if (result.success) {
       io.emit('analysis-update', {
         sessionId,
@@ -195,18 +196,22 @@ function logConversationToTerminal(event) {
         analyzeAndBroadcast(currentSessionId, `message threshold reached (${messagesSinceLastAnalysis} messages)`);
       }
       
-    } else if (event.type === 'response.audio_transcript.done' && event.transcript) {
-      conversationStore.addMessage(currentSessionId, 'assistant', event.transcript);
-      messagesSinceLastAnalysis++;
+    } else if (event.type === 'response.audio_transcript.done') {
+      console.log('🔍 Found response.audio_transcript.done event!');
+      console.log('🔍 Event has transcript:', !!event.transcript);
+      console.log('🔍 Current session ID:', currentSessionId);
       
-      // Check for keyword triggers in assistant message
-      if (shouldTriggerAnalysis(event.transcript)) {
-        analyzeAndBroadcast(currentSessionId, `keyword detected in response: "${event.transcript.substring(0, 50)}..."`);
+      if (event.transcript) {
+        conversationStore.addMessage(currentSessionId, 'assistant', event.transcript);
+        messagesSinceLastAnalysis++;
       }
-      // Check for message count trigger
-      else if (messagesSinceLastAnalysis >= ANALYSIS_MESSAGE_THRESHOLD) {
-        analyzeAndBroadcast(currentSessionId, `message threshold reached (${messagesSinceLastAnalysis} messages)`);
-      }
+      
+      console.log('🤖 AI finished speaking, scheduling analysis in 1.5 seconds...');
+      // Always analyze after AI speaks to give user a recommended response
+      setTimeout(() => {
+        console.log('⏰ Auto-analysis timeout triggered, analyzing now...');
+        analyzeAndBroadcast(currentSessionId, 'ai-response-completed');
+      }, 1500); // Small delay to ensure full response is captured
     }
   }
   
@@ -215,6 +220,15 @@ function logConversationToTerminal(event) {
     console.log(`\n🔧 [DEBUG] Voice Event: ${event.type}`);
     if (event.transcript) console.log(`   Transcript: "${event.transcript}"`);
     if (event.delta) console.log(`   Delta: "${event.delta}"`);
+    
+    // Fallback trigger for AI responses - trigger here where we KNOW the event is detected
+    if (event.type === 'response.audio_transcript.done' && currentSessionId) {
+      console.log('🚀 FALLBACK: Detected AI response completion, triggering analysis...');
+      setTimeout(() => {
+        console.log('⏰ FALLBACK: Auto-analysis timeout triggered, analyzing now...');
+        analyzeAndBroadcast(currentSessionId, 'ai-response-completed-fallback');
+      }, 1500);
+    }
   }
 }
 
@@ -391,36 +405,21 @@ app.get('/api/analysis/:sessionId/latest', async (req, res) => {
   }
 });
 
-// Force analysis with specific reason
-app.post('/api/analyze-force', async (req, res) => {
+// Set lender context for analysis
+app.post('/api/set-lender-context', (req, res) => {
   try {
-    const { sessionId, reason = 'manual' } = req.body;
-    const targetSessionId = sessionId || currentSessionId;
+    const { lender, lenderData } = req.body;
     
-    if (!targetSessionId) {
-      return res.status(400).json({ error: 'No session ID provided and no active session' });
-    }
+    currentLenderContext = {
+      currentLender: lender,
+      lenderData: lenderData
+    };
     
-    // Force analysis by temporarily bypassing debouncing
-    const originalLastAnalysisTime = lastAnalysisTime;
-    lastAnalysisTime = 0;
-    
-    await analyzeAndBroadcast(targetSessionId, `forced: ${reason}`);
-    
-    // Restore original time to maintain proper debouncing
-    if (originalLastAnalysisTime > 0) {
-      lastAnalysisTime = Date.now();
-    }
-    
-    res.json({ 
-      success: true, 
-      message: 'Forced analysis triggered',
-      sessionId: targetSessionId,
-      reason 
-    });
+    console.log(`🏦 Set lender context: ${lender}`);
+    res.json({ success: true, lender: lender });
   } catch (error) {
-    console.error('Force analysis endpoint error:', error);
-    res.status(500).json({ error: 'Failed to force analysis' });
+    console.error('Set lender context error:', error);
+    res.status(500).json({ error: 'Failed to set lender context' });
   }
 });
 
